@@ -69,16 +69,17 @@ app.use("/api/communication", communicationRoutes);
 
 app.get("/", (req, res) => res.send("Server is running!"));
 
-// Local / long-running server startup only. On Vercel the app is invoked as a
-// serverless function (see /api/index.js): no app.listen() and no persistent
-// scheduler process.
-if (!isServerless) {
-  connectDB();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    // Start the message scheduler
+// Connect to the database (cached across invocations).
+connectDB();
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  // The in-process scheduler needs a persistent process. It runs locally by
+  // default, and on Vercel only when ENABLE_SCHEDULER=true (otherwise use
+  // Vercel Cron, since Fluid compute can scale to zero).
+  if (!isServerless || process.env.ENABLE_SCHEDULER === "true") {
     startScheduler();
-  });
-}
+  }
+});
 
 export default app;
