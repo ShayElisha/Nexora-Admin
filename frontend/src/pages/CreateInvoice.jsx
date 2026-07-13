@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { fetchAllCompanies } from "../api/api";
 
-const NEXORA_API_URL = "http://localhost:5000/api";
+const NEXORA_API_URL =
+  import.meta.env.VITE_NEXORA_API_URL || "http://localhost:5000/api";
 
 // Subscription plan prices (monthly)
 const PLAN_PRICES = {
