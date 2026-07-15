@@ -17,6 +17,9 @@ import {
 } from "recharts";
 import { fetchAllCompanies, fetchAllPayments } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
+import StatusBadge from "../components/ui/StatusBadge.jsx";
+import SectionCard from "../components/ui/SectionCard.jsx";
+import MetricCard from "../components/ui/MetricCard.jsx";
 
 export default function CompanyDetails() {
   const { companyId } = useParams();
@@ -237,14 +240,14 @@ export default function CompanyDetails() {
         {/* Header */}
         <div className="mb-12 animate-in">
           <div className="flex items-center gap-6 mb-8">
-            <div className="w-20 h-20 bg-[var(--black)] text-white flex items-center justify-center font-medium text-3xl">
+            <div className="w-20 h-20 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-semibold text-3xl">
               {company.name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-5xl font-light mb-4 tracking-tight">{company.name}</h1>
-              <span className={`badge ${company.status === "Active" ? "badge-success" : "badge-warning"}`}>
-                {company.status}
-              </span>
+              <h1 className="text-4xl md:text-5xl font-semibold mb-3 tracking-tight text-[var(--text-primary)]">
+                {company.name}
+              </h1>
+              <StatusBadge status={company.status} />
             </div>
           </div>
         </div>
@@ -272,28 +275,25 @@ export default function CompanyDetails() {
         <div className="animate-in" style={{ animationDelay: "0.2s" }}>
           {/* Overview Tab */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - Main Info */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Company Information */}
-                <div className="card border p-8">
-                  <h2 className="text-2xl font-light mb-6">Company Information</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <SectionCard title="Contact">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Email</div>
-                      <div className="text-[var(--gray-700)] font-light">{company.email || "—"}</div>
+                      <div className="field-label">Email</div>
+                      <div className="field-value">{company.email || "—"}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Phone</div>
-                      <div className="text-[var(--gray-700)] font-light">{company.phone || "—"}</div>
+                      <div className="field-label">Phone</div>
+                      <div className="field-value">{company.phone || "—"}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Status</div>
-                      <div className="text-[var(--gray-700)] font-medium">{company.status || "—"}</div>
+                      <div className="field-label">Status</div>
+                      <StatusBadge status={company.status} />
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Registration Date</div>
-                      <div className="text-[var(--gray-700)] font-light">
+                      <div className="field-label">Registration Date</div>
+                      <div className="field-value">
                         {company.createdAt
                           ? new Date(company.createdAt).toLocaleDateString("en-US", {
                               month: "long",
@@ -304,22 +304,20 @@ export default function CompanyDetails() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </SectionCard>
 
-                {/* Subscription Details */}
-                <div className="card border p-8">
-                  <h2 className="text-2xl font-light mb-6">Subscription</h2>
+                <SectionCard title="Plan">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Plan</div>
-                      <div className="text-[var(--gray-700)] font-medium text-lg">
+                      <div className="field-label">Current Plan</div>
+                      <div className="field-value text-lg font-semibold">
                         {company.subscription?.plan || "No Plan"}
                       </div>
                     </div>
                     {company.subscription?.startDate && (
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Start Date</div>
-                        <div className="text-[var(--gray-700)] font-light">
+                        <div className="field-label">Start Date</div>
+                        <div className="field-value">
                           {new Date(company.subscription.startDate).toLocaleDateString("en-US", {
                             month: "long",
                             day: "numeric",
@@ -330,8 +328,8 @@ export default function CompanyDetails() {
                     )}
                     {company.subscription?.endDate && (
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">End Date</div>
-                        <div className="text-[var(--gray-700)] font-light">
+                        <div className="field-label">End Date</div>
+                        <div className="field-value">
                           {new Date(company.subscription.endDate).toLocaleDateString("en-US", {
                             month: "long",
                             day: "numeric",
@@ -341,29 +339,49 @@ export default function CompanyDetails() {
                       </div>
                     )}
                   </div>
-                </div>
+                </SectionCard>
+
+                <SectionCard title="Activity">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <MetricCard
+                      label="Account age"
+                      value={`${usageStats?.daysSinceRegistration ?? 0}d`}
+                      hint="Since registration"
+                      tone="blue"
+                    />
+                    <MetricCard
+                      label="Payments"
+                      value={usageStats?.totalPayments ?? 0}
+                      hint="Recorded transactions"
+                      tone="green"
+                    />
+                    <MetricCard
+                      label="Revenue"
+                      value={`$${(usageStats?.totalRevenue ?? 0).toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}`}
+                      hint="Lifetime billed"
+                      tone="orange"
+                    />
+                  </div>
+                </SectionCard>
               </div>
 
-              {/* Right Column - Quick Actions */}
-              <div className="space-y-8">
-                <div className="card border p-8">
-                  <h3 className="text-xl font-light mb-6">Quick Actions</h3>
+              <div className="space-y-6">
+                <SectionCard title="Quick Actions">
                   <div className="space-y-3">
                     <button className="btn btn-primary w-full">Send Message</button>
                     <button className="btn btn-secondary w-full">View Documents</button>
                     <button className="btn btn-secondary w-full">Edit Company</button>
                   </div>
-                </div>
+                </SectionCard>
 
-                <div className="card border p-8">
-                  <h3 className="text-xl font-light mb-6">Additional Info</h3>
-                  <div className="space-y-4 text-sm">
-                    <div>
-                      <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-1">Company ID</div>
-                      <div className="text-[var(--gray-700)] font-mono text-xs break-all">{company._id}</div>
-                    </div>
+                <SectionCard title="Additional Info">
+                  <div className="field-label">Company ID</div>
+                  <div className="field-value font-mono text-xs break-all text-[var(--text-secondary)]">
+                    {company._id}
                   </div>
-                </div>
+                </SectionCard>
               </div>
             </div>
           )}

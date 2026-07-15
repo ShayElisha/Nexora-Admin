@@ -1,19 +1,69 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { 
-  fetchAllCompanies, 
-  fetchPendingCompanies, 
+import {
+  fetchAllCompanies,
+  fetchPendingCompanies,
   getGeographicDistribution,
   fetchAlerts,
 } from "../api/api";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { useToast } from "../components/Toaster.jsx";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import MetricCard from "../components/ui/MetricCard.jsx";
+import StatusBadge from "../components/ui/StatusBadge.jsx";
+import InsightCard from "../components/ui/InsightCard.jsx";
+import SectionCard from "../components/ui/SectionCard.jsx";
+
+const CHART_COLORS = ["#2563eb", "#10b981", "#f97316", "#f59e0b", "#64748b"];
+
+function BuildingIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M14.25 9v6m-4.5-6v6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  );
+}
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const isRTL = i18n.language === "he";
   const [stats, setStats] = useState({
     total: 0,
@@ -27,22 +77,21 @@ export default function Dashboard() {
   const [geographicData, setGeographicData] = useState([]);
   const [importantAlerts, setImportantAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Widget visibility state (saved in localStorage)
+
   const [visibleWidgets, setVisibleWidgets] = useState(() => {
     const saved = localStorage.getItem("dashboard_widgets");
-    return saved ? JSON.parse(saved) : {
-      stats: true,
-      monthlyChart: true,
-      planDistribution: true,
-      geographic: true,
-      alerts: true,
-      recentActivity: true,
-      quickActions: true,
-    };
+    return saved
+      ? JSON.parse(saved)
+      : {
+          stats: true,
+          monthlyChart: true,
+          planDistribution: true,
+          geographic: true,
+          alerts: true,
+          recentActivity: true,
+          insights: true,
+        };
   });
-
-  const COLORS = ['#000000', '#525252', '#737373', '#a3a3a3', '#d4d4d4'];
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,8 +106,6 @@ export default function Dashboard() {
 
         const companies = Array.isArray(allCompanies) ? allCompanies : [];
         const pending = Array.isArray(pendingCompanies) ? pendingCompanies : [];
-
-        // Calculate stats
         const active = companies.filter((c) => c.status === "Active").length;
         const inactive = companies.filter((c) => c.status === "Inactive").length;
 
@@ -69,7 +116,6 @@ export default function Dashboard() {
           pending: pending.length,
         });
 
-        // Prepare monthly chart data (last 6 months)
         const monthlyData = {};
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -78,61 +124,53 @@ export default function Dashboard() {
           if (company.createdAt) {
             const date = new Date(company.createdAt);
             if (date >= sixMonthsAgo) {
-              const monthKey = date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+              const monthKey = date.toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              });
               monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
             }
           }
         });
 
-        const chartDataArray = Object.entries(monthlyData)
-          .map(([month, count]) => ({ month, count }))
-          .sort((a, b) => {
-            const dateA = new Date(a.month + " 1, 2024");
-            const dateB = new Date(b.month + " 1, 2024");
-            return dateA - dateB;
-          });
+        setChartData(
+          Object.entries(monthlyData)
+            .map(([month, count]) => ({ month, count }))
+            .sort((a, b) => new Date(`${a.month} 1, 2024`) - new Date(`${b.month} 1, 2024`))
+        );
 
-        setChartData(chartDataArray);
-
-        // Plan distribution
         const planCounts = {};
         companies.forEach((company) => {
           const plan = company.subscription?.plan || "No Plan";
           planCounts[plan] = (planCounts[plan] || 0) + 1;
         });
+        setPlanDistribution(
+          Object.entries(planCounts).map(([name, value]) => ({ name, value }))
+        );
 
-        const planData = Object.entries(planCounts).map(([name, value]) => ({
-          name,
-          value,
-        }));
+        setRecentActivity(
+          companies
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .slice(0, 10)
+            .map((c) => ({
+              id: c._id,
+              name: c.name,
+              action: "Registered",
+              date: c.createdAt,
+              status: c.status,
+              plan: c.subscription?.plan || "—",
+            }))
+        );
 
-        setPlanDistribution(planData);
+        setGeographicData((Array.isArray(geoData) ? geoData : []).slice(0, 10));
 
-        // Recent activity (last 10 companies)
-        const recent = companies
-          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-          .slice(0, 10)
-          .map((c) => ({
-            id: c._id,
-            name: c.name,
-            action: "Registered",
-            date: c.createdAt,
-            status: c.status,
-          }));
-
-        setRecentActivity(recent);
-
-        // Set geographic data
-        const geoArray = Array.isArray(geoData) ? geoData : [];
-        setGeographicData(geoArray.slice(0, 10)); // Top 10 countries
-
-        // Set important alerts (high priority and critical)
         const alertsArray = Array.isArray(alertsData) ? alertsData : [];
         setImportantAlerts(
           alertsArray
-            .filter((alert) => 
-              (alert.priority === "high" || alert.priority === "critical") && 
-              alert.status !== "resolved"
+            .filter(
+              (alert) =>
+                (alert.priority === "high" || alert.priority === "critical") &&
+                alert.status !== "resolved"
             )
             .slice(0, 5)
         );
@@ -146,274 +184,346 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // Save widget visibility to localStorage
   const toggleWidget = (widgetName) => {
-    const newVisibility = {
+    const next = {
       ...visibleWidgets,
       [widgetName]: !visibleWidgets[widgetName],
     };
-    setVisibleWidgets(newVisibility);
-    localStorage.setItem("dashboard_widgets", JSON.stringify(newVisibility));
+    setVisibleWidgets(next);
+    localStorage.setItem("dashboard_widgets", JSON.stringify(next));
+  };
+
+  const activeRate = stats.total > 0 ? (stats.active / stats.total) * 100 : 0;
+  const growthTrend = useMemo(() => {
+    if (chartData.length < 2) return null;
+    const prev = chartData[chartData.length - 2]?.count || 0;
+    const curr = chartData[chartData.length - 1]?.count || 0;
+    if (prev === 0) return curr > 0 ? 100 : 0;
+    return ((curr - prev) / prev) * 100;
+  }, [chartData]);
+
+  const tooltipStyle = {
+    backgroundColor: "var(--bg-elevated)",
+    border: "1px solid var(--border)",
+    borderRadius: "10px",
+    boxShadow: "var(--shadow-md)",
+    color: "var(--text-primary)",
+    fontSize: "12px",
   };
 
   if (loading) {
     return (
       <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
-        <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
+        <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }} />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen pt-24 pb-16" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="container">
-        {/* Header */}
-        <div className="mb-20 animate-in">
-          <div>
-            <h1 className="text-6xl font-light mb-4 tracking-tight">{t("dashboard.title")}</h1>
-            <p className="text-xl text-[var(--gray-500)] font-light">{t("dashboard.subtitle")}</p>
-          </div>
-        </div>
+      <div className="container max-w-7xl mx-auto space-y-10">
+        <header className="animate-in">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[var(--text-primary)] mb-3">
+            {t("dashboard.title")}
+          </h1>
+          <p className="text-base md:text-lg text-[var(--text-secondary)]">
+            {t("dashboard.subtitle")}
+          </p>
+        </header>
 
-        {/* Important Alerts */}
+        {visibleWidgets.insights && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-in">
+            <InsightCard
+              tone="primary"
+              title="Platform health"
+              description={`${activeRate.toFixed(0)}% of companies are currently active. Keep onboarding momentum healthy.`}
+              icon={<span>AI</span>}
+            />
+            <InsightCard
+              tone={stats.pending > 0 ? "warning" : "success"}
+              title={stats.pending > 0 ? "Pending approvals" : "Queue is clear"}
+              description={
+                stats.pending > 0
+                  ? `${stats.pending} companies await review. Resolve these to unlock activation.`
+                  : "No pending companies in the approval queue."
+              }
+            />
+            <InsightCard
+              tone={growthTrend != null && growthTrend < 0 ? "orange" : "success"}
+              title="New company growth"
+              description={
+                growthTrend == null
+                  ? "Not enough monthly data to calculate growth yet."
+                  : `Month-over-month new registrations changed by ${growthTrend.toFixed(1)}%.`
+              }
+            />
+          </div>
+        )}
+
         {visibleWidgets.alerts && importantAlerts.length > 0 && (
-          <div className="mb-12 animate-in" style={{ animationDelay: "0.08s" }}>
-            <div className="card border p-6 bg-red-50 border-red-200">
-              <div className={`flex items-center justify-between mb-4 ${isRTL ? "flex-row-reverse" : ""}`}>
-                <h3 className="text-lg font-medium text-red-900">{t("dashboard.importantAlerts")}</h3>
-                <button
-                  onClick={() => toggleWidget("alerts")}
-                  className="text-sm text-red-600 hover:text-red-800"
-                >
-                  {t("dashboard.hide")}
-                </button>
-              </div>
-              <div className="space-y-3">
-                {importantAlerts.map((alert) => (
-                  <div
-                    key={alert._id}
-                    className="p-4 bg-white rounded-lg border border-red-200 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => navigate("/alerts")}
-                  >
-                    <div className={`flex items-start justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
-                      <div className="flex-1">
-                        <div className="font-medium text-red-900 mb-1">{alert.title}</div>
-                        <div className="text-sm text-red-700">{alert.message}</div>
-                        <div className="text-xs text-red-500 mt-2">
-                          {new Date(alert.createdAt).toLocaleDateString(i18n.language === "he" ? "he-IL" : "en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                      </div>
-                      <span className={`badge ${
-                        alert.priority === "critical" ? "badge-error" : "badge-warning"
-                      } ${isRTL ? "mr-4" : "ml-4"}`}>
-                        {alert.priority}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <SectionCard
+            title={t("dashboard.importantAlerts")}
+            action={
               <button
                 onClick={() => navigate("/alerts")}
-                className="mt-4 text-sm text-red-600 hover:text-red-800 font-medium"
+                className="text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)]"
               >
-                {t("dashboard.viewAllAlerts")} {isRTL ? "←" : "→"}
+                {t("dashboard.viewAllAlerts")}
               </button>
+            }
+            className="animate-in"
+          >
+            <div className="space-y-3">
+              {importantAlerts.map((alert) => (
+                <button
+                  key={alert._id}
+                  type="button"
+                  onClick={() => navigate("/alerts")}
+                  className="w-full text-start p-4 rounded-[var(--radius-md)] border border-[var(--border)] hover:bg-[var(--gray-50)] transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="font-medium text-[var(--text-primary)] mb-1">{alert.title}</div>
+                      <div className="text-sm text-[var(--text-secondary)]">{alert.message}</div>
+                    </div>
+                    <StatusBadge status={alert.priority} />
+                  </div>
+                </button>
+              ))}
             </div>
-          </div>
+          </SectionCard>
         )}
 
-        {/* Stats Cards */}
         {visibleWidgets.stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-in" style={{ animationDelay: "0.1s" }}>
-            <div className="card border p-8 relative">
-              <button
-                onClick={() => toggleWidget("stats")}
-                className={`absolute top-4 text-[var(--gray-400)] hover:text-[var(--gray-600)] text-xs ${isRTL ? "left-4" : "right-4"}`}
-                title={t("dashboard.hideWidget")}
-              >
-                ×
-              </button>
-              <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-4">{t("dashboard.totalCompanies")}</div>
-              <div className="text-4xl font-light mb-2">{stats.total}</div>
-              <div className="text-sm text-[var(--gray-500)] font-light">{t("dashboard.allRegistered")}</div>
-            </div>
-
-            <div className="card border p-8">
-              <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-4">{t("dashboard.active")}</div>
-              <div className="text-4xl font-light mb-2">{stats.active}</div>
-              <div className="text-sm text-[var(--gray-500)] font-light">{t("dashboard.currentlyActive")}</div>
-            </div>
-
-            <div className="card border p-8">
-              <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-4">{t("dashboard.inactive")}</div>
-              <div className="text-4xl font-light mb-2">{stats.inactive}</div>
-              <div className="text-sm text-[var(--gray-500)] font-light">{t("dashboard.notActive")}</div>
-            </div>
-
-            <div className="card border p-8">
-              <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-4">{t("dashboard.pending")}</div>
-              <div className="text-4xl font-light mb-2">{stats.pending}</div>
-              <div className="text-sm text-[var(--gray-500)] font-light">{t("dashboard.awaitingApproval")}</div>
-            </div>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 animate-in"
+            style={{ animationDelay: "0.05s" }}
+          >
+            <MetricCard
+              label={t("dashboard.totalCompanies")}
+              value={stats.total}
+              hint={t("dashboard.allRegistered")}
+              tone="blue"
+              icon={<BuildingIcon />}
+              trend={growthTrend}
+              onDismiss={() => toggleWidget("stats")}
+            />
+            <MetricCard
+              label={t("dashboard.active")}
+              value={stats.active}
+              hint={t("dashboard.currentlyActive")}
+              tone="green"
+              icon={<CheckIcon />}
+            />
+            <MetricCard
+              label={t("dashboard.inactive")}
+              value={stats.inactive}
+              hint={t("dashboard.notActive")}
+              tone="slate"
+              icon={<PauseIcon />}
+            />
+            <MetricCard
+              label={t("dashboard.pending")}
+              value={stats.pending}
+              hint={t("dashboard.awaitingApproval")}
+              tone="orange"
+              icon={<ClockIcon />}
+            />
           </div>
         )}
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 animate-in" style={{ animationDelay: "0.2s" }}>
-          {/* Monthly Growth Chart */}
+        <div
+          className="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-in"
+          style={{ animationDelay: "0.1s" }}
+        >
           {visibleWidgets.monthlyChart && (
-            <div className="card border p-8 relative">
-              <button
-                onClick={() => toggleWidget("monthlyChart")}
-                className={`absolute top-4 text-[var(--gray-400)] hover:text-[var(--gray-600)] text-xs z-10 ${isRTL ? "left-4" : "right-4"}`}
-                title={t("dashboard.hideWidget")}
-              >
-                ×
-              </button>
-              <h3 className="text-xl font-medium mb-6">{t("dashboard.newCompaniesByMonth")}</h3>
-              <ResponsiveContainer width="100%" height={300}>
+            <SectionCard
+              title={t("dashboard.newCompaniesByMonth")}
+              action={
+                <button
+                  onClick={() => toggleWidget("monthlyChart")}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                >
+                  ×
+                </button>
+              }
+            >
+              <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-200)" />
-                  <XAxis dataKey="month" stroke="var(--gray-500)" style={{ fontSize: "12px" }} />
-                  <YAxis stroke="var(--gray-500)" style={{ fontSize: "12px" }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--white)",
-                      border: "1px solid var(--gray-200)",
-                      borderRadius: "4px",
-                    }}
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    stroke="var(--text-muted)"
+                    tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
                   />
-                  <Line type="monotone" dataKey="count" stroke="var(--black)" strokeWidth={2} dot={{ fill: "var(--black)" }} />
+                  <YAxis
+                    stroke="var(--text-muted)"
+                    tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#2563eb"
+                    strokeWidth={2.5}
+                    dot={{ fill: "#2563eb", r: 4, strokeWidth: 0 }}
+                    activeDot={{ r: 6 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+            </SectionCard>
           )}
 
-          {/* Plan Distribution */}
           {visibleWidgets.planDistribution && (
-            <div className="card border p-8 relative">
-              <button
-                onClick={() => toggleWidget("planDistribution")}
-                className={`absolute top-4 text-[var(--gray-400)] hover:text-[var(--gray-600)] text-xs z-10 ${isRTL ? "left-4" : "right-4"}`}
-                title={t("dashboard.hideWidget")}
-              >
-                ×
-              </button>
-              <h3 className="text-xl font-medium mb-6">{t("dashboard.planDistribution")}</h3>
-              <ResponsiveContainer width="100%" height={300}>
+            <SectionCard
+              title={t("dashboard.planDistribution")}
+              action={
+                <button
+                  onClick={() => toggleWidget("planDistribution")}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                >
+                  ×
+                </button>
+              }
+            >
+              <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
                     data={planDistribution}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
+                    innerRadius={58}
+                    outerRadius={96}
+                    paddingAngle={3}
                     dataKey="value"
+                    cornerRadius={6}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {planDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {planDistribution.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={tooltipStyle} />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+            </SectionCard>
           )}
         </div>
 
-        {/* Geographic Distribution */}
         {visibleWidgets.geographic && geographicData.length > 0 && (
-          <div className="mb-12 animate-in" style={{ animationDelay: "0.25s" }}>
-            <div className="card border p-8 relative">
+          <SectionCard
+            title={t("dashboard.geographicDistribution")}
+            className="animate-in"
+            action={
               <button
                 onClick={() => toggleWidget("geographic")}
-                className={`absolute top-4 text-[var(--gray-400)] hover:text-[var(--gray-600)] text-xs z-10 ${isRTL ? "left-4" : "right-4"}`}
-                title={t("dashboard.hideWidget")}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
               >
                 ×
               </button>
-              <h3 className="text-xl font-medium mb-6">{t("dashboard.geographicDistribution")}</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={geographicData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-200)" />
-                  <XAxis type="number" stroke="var(--gray-500)" fontSize={12} />
-                  <YAxis 
-                    dataKey="country" 
-                    type="category" 
-                    stroke="var(--gray-500)" 
-                    fontSize={12} 
-                    width={isRTL ? 150 : 120}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--white)",
-                      border: "1px solid var(--gray-200)",
-                      borderRadius: "4px",
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="count" fill="#2563eb" name={t("dashboard.totalCompanies")} />
-                  <Bar dataKey="active" fill="#10b981" name={t("dashboard.active")} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+            }
+          >
+            <ResponsiveContainer width="100%" height={360}>
+              <BarChart data={geographicData} layout="vertical" barGap={6}>
+                <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" horizontal={false} />
+                <XAxis
+                  type="number"
+                  stroke="var(--text-muted)"
+                  tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="country"
+                  type="category"
+                  width={isRTL ? 150 : 120}
+                  stroke="var(--text-muted)"
+                  tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend />
+                <Bar dataKey="count" fill="#2563eb" name={t("dashboard.totalCompanies")} radius={[0, 6, 6, 0]} />
+                <Bar dataKey="active" fill="#10b981" name={t("dashboard.active")} radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </SectionCard>
         )}
 
-        {/* Recent Activity */}
         {visibleWidgets.recentActivity && (
-          <div className="card border p-8 animate-in relative" style={{ animationDelay: "0.3s" }}>
-            <button
-              onClick={() => toggleWidget("recentActivity")}
-              className={`absolute top-4 text-[var(--gray-400)] hover:text-[var(--gray-600)] text-xs z-10 ${isRTL ? "left-4" : "right-4"}`}
-              title={t("dashboard.hideWidget")}
-            >
-              ×
-            </button>
-            <h3 className="text-xl font-medium mb-6">{t("dashboard.recentActivity")}</h3>
+          <SectionCard
+            title={t("dashboard.recentActivity")}
+            className="animate-in"
+            action={
+              <button
+                onClick={() => toggleWidget("recentActivity")}
+                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              >
+                ×
+              </button>
+            }
+          >
             {recentActivity.length > 0 ? (
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className={`flex items-center justify-between py-4 border-b border-[var(--gray-100)] last:border-0 ${isRTL ? "flex-row-reverse" : ""}`}>
-                    <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
-                      <div className="w-10 h-10 bg-[var(--black)] text-white flex items-center justify-center font-medium text-sm">
-                        {activity.name?.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-medium">{activity.name}</div>
-                        <div className="text-sm text-[var(--gray-500)] font-light">{activity.action}</div>
-                      </div>
-                    </div>
-                    <div className={isRTL ? "text-left" : "text-right"}>
-                      <div className="text-sm font-light text-[var(--gray-600)]">
-                        {activity.date
-                          ? new Date(activity.date).toLocaleDateString(i18n.language === "he" ? "he-IL" : "en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "—"}
-                      </div>
-                      <span className={`badge ${activity.status === "Active" ? "badge-success" : "badge-warning"} mt-2`}>
-                        {activity.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <div className="overflow-x-auto -mx-2">
+                <table className="data-table min-w-full">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th>Plan</th>
+                      <th>Status</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentActivity.map((activity) => (
+                      <tr
+                        key={activity.id}
+                        className="cursor-pointer"
+                        onClick={() => navigate(`/companies/${activity.id}`)}
+                      >
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center text-sm font-semibold">
+                              {activity.name?.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-medium text-[var(--text-primary)]">{activity.name}</div>
+                              <div className="text-xs text-[var(--text-muted)]">{activity.action}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-[var(--text-secondary)]">{activity.plan}</td>
+                        <td>
+                          <StatusBadge status={activity.status} />
+                        </td>
+                        <td className="text-[var(--text-secondary)] whitespace-nowrap">
+                          {activity.date
+                            ? new Date(activity.date).toLocaleDateString(
+                                i18n.language === "he" ? "he-IL" : "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )
+                            : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <div className="text-center py-12 text-[var(--gray-500)] font-light">{t("dashboard.noRecentActivity")}</div>
+              <div className="text-center py-12 text-[var(--text-muted)]">
+                {t("dashboard.noRecentActivity")}
+              </div>
             )}
-          </div>
+          </SectionCard>
         )}
       </div>
     </div>

@@ -30,14 +30,15 @@ import {
   getComprehensiveAnalytics,
 } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
+import InsightCard from "../components/ui/InsightCard.jsx";
 
 const chartColors = [
   "#2563eb",
-  "#6366f1",
-  "#8b5cf6",
-  "#ec4899",
-  "#0ea5e9",
   "#10b981",
+  "#f97316",
+  "#f59e0b",
+  "#0ea5e9",
+  "#64748b",
   "#f59e0b",
   "#ef4444",
 ];
@@ -699,108 +700,97 @@ export default function AnalyticsDashboard() {
         </section>
 
         {/* AI Insights & Recommendations */}
-        <section className="card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">🤖</span>
-            <h2 className="text-xl font-semibold">{t("analytics.insights.title")}</h2>
+        <section className="card card-elevated p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="metric-icon metric-icon-blue text-xs font-semibold">AI</div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              {t("analytics.insights.title")}
+            </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Insights */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-[var(--text)]">{t("analytics.insights.keyInsights")}</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">
+                {t("analytics.insights.keyInsights")}
+              </h3>
               {kpiData.churnRate > 5 && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm font-medium text-red-800">
-                    ⚠️ {t("analytics.insights.highChurn.title")}
-                  </p>
-                  <p className="text-xs text-red-600 mt-1">
-                    {t("analytics.insights.highChurn.message", { rate: kpiData.churnRate.toFixed(2) })}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="danger"
+                  title={t("analytics.insights.highChurn.title")}
+                  description={t("analytics.insights.highChurn.message", {
+                    rate: kpiData.churnRate.toFixed(2),
+                  })}
+                />
               )}
               {kpiData.growthRate < 0 && (
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <p className="text-sm font-medium text-orange-800">
-                    📉 {t("analytics.insights.negativeGrowth.title")}
-                  </p>
-                  <p className="text-xs text-orange-600 mt-1">
-                    {t("analytics.insights.negativeGrowth.message")}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="orange"
+                  title={t("analytics.insights.negativeGrowth.title")}
+                  description={t("analytics.insights.negativeGrowth.message")}
+                />
               )}
               {kpiData.conversionRate < 30 && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm font-medium text-yellow-800">
-                    🔄 {t("analytics.insights.lowConversion.title")}
-                  </p>
-                  <p className="text-xs text-yellow-600 mt-1">
-                    {t("analytics.insights.lowConversion.message", { rate: kpiData.conversionRate.toFixed(2) })}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="warning"
+                  title={t("analytics.insights.lowConversion.title")}
+                  description={t("analytics.insights.lowConversion.message", {
+                    rate: kpiData.conversionRate.toFixed(2),
+                  })}
+                />
               )}
               {atRiskCompanies.length > 0 && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm font-medium text-red-800">
-                    🚨 {t("analytics.insights.atRisk.title", { count: atRiskCompanies.length })}
-                  </p>
-                  <p className="text-xs text-red-600 mt-1">
-                    {t("analytics.insights.atRisk.message", { count: atRiskCompanies.length })}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="danger"
+                  title={t("analytics.insights.atRisk.title", { count: atRiskCompanies.length })}
+                  description={t("analytics.insights.atRisk.message", {
+                    count: atRiskCompanies.length,
+                  })}
+                />
               )}
               {kpiData.growthRate > 10 && kpiData.churnRate < 3 && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm font-medium text-green-800">
-                    ✅ {t("analytics.insights.healthyGrowth.title")}
-                  </p>
-                  <p className="text-xs text-green-600 mt-1">
-                    {t("analytics.insights.healthyGrowth.message")}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="success"
+                  title={t("analytics.insights.healthyGrowth.title")}
+                  description={t("analytics.insights.healthyGrowth.message")}
+                />
               )}
             </div>
 
-            {/* Recommendations */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-[var(--text)]">{t("analytics.insights.recommendations")}</h3>
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm font-medium text-blue-800">
-                  💡 {t("analytics.insights.focusTopPerformers.title")}
-                </p>
-                <p className="text-xs text-blue-600 mt-1">
-                  {t("analytics.insights.focusTopPerformers.message", { count: Math.min(3, topCompanies.length) })}
-                </p>
-              </div>
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">
+                {t("analytics.insights.recommendations")}
+              </h3>
+              <InsightCard
+                tone="primary"
+                title={t("analytics.insights.focusTopPerformers.title")}
+                description={t("analytics.insights.focusTopPerformers.message", {
+                  count: Math.min(3, topCompanies.length),
+                })}
+              />
               {kpiData.arpu < 200 && (
-                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800">
-                    📊 {t("analytics.insights.increaseARPU.title")}
-                  </p>
-                  <p className="text-xs text-purple-600 mt-1">
-                    {t("analytics.insights.increaseARPU.message", { arpu: kpiData.arpu.toFixed(2) })}
-                  </p>
-                </div>
+                <InsightCard
+                  tone="primary"
+                  title={t("analytics.insights.increaseARPU.title")}
+                  description={t("analytics.insights.increaseARPU.message", {
+                    arpu: kpiData.arpu.toFixed(2),
+                  })}
+                />
               )}
               {pendingCompanies > 0 && (
-                <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                  <p className="text-sm font-medium text-indigo-800">
-                    ⏰ {t("analytics.insights.reviewPending.title")}
-                  </p>
-                  <p className="text-xs text-indigo-600 mt-1">
-                    {t("analytics.insights.reviewPending.message", { count: pendingCompanies })}
-                  </p>
-                </div>
-              )}
-              <div className="p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                <p className="text-sm font-medium text-teal-800">
-                  📈 {t("analytics.insights.revenueForecast.title")}
-                </p>
-                <p className="text-xs text-teal-600 mt-1">
-                  {t("analytics.insights.revenueForecast.message", { 
-                    forecast: formatCurrency(kpiData.arr * (1 + kpiData.growthRate / 100))
+                <InsightCard
+                  tone="warning"
+                  title={t("analytics.insights.reviewPending.title")}
+                  description={t("analytics.insights.reviewPending.message", {
+                    count: pendingCompanies,
                   })}
-                </p>
-              </div>
+                />
+              )}
+              <InsightCard
+                tone="success"
+                title={t("analytics.insights.revenueForecast.title")}
+                description={t("analytics.insights.revenueForecast.message", {
+                  forecast: formatCurrency(kpiData.arr * (1 + kpiData.growthRate / 100)),
+                })}
+              />
             </div>
           </div>
         </section>
