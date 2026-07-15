@@ -47,17 +47,9 @@ const sendScheduledMessages = async () => {
           }
         }
 
-        // Update message status
+        // Update message status (enum: draft|scheduled|sent|failed — no "partial")
         const allSent = message.recipients.every((r) => r.status === "sent");
-        const someSent = message.recipients.some((r) => r.status === "sent");
-        
-        if (allSent) {
-          message.status = "sent";
-        } else if (someSent) {
-          message.status = "partial";
-        } else {
-          message.status = "failed";
-        }
+        message.status = allSent ? "sent" : "failed";
         
         message.sentAt = new Date();
         await message.save();
