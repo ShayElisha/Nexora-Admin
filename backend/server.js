@@ -20,42 +20,89 @@ const isServerless = Boolean(process.env.VERCEL);
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS configuration - Allow all localhost origins in development
+const buildAllowedOrigins = () => {
+  const origins = new Set([
+    "http://localhost:5173",
+    "http://localhost:5174",
+  ]);
+
+  for (const raw of (process.env.FRONTEND_URL || "").split(",")) {
+    const url = raw.trim();
+    if (url) origins.add(url.replace(/\/$/, ""));
+  }
+
+  // Vercel injects these per deployment (no protocol). Covers production + previews.
+  for (const host of [
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ]) {
+    if (!host) continue;
+    const hostname = host.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    origins.add(`https://${hostname}`);
+  }
+
+  return origins;
+};
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  if (
+    origin.startsWith("http://localhost:") ||
+    origin.startsWith("http://127.0.0.1:")
+  ) {
+    return true;
+  }
+
+  const allowed = buildAllowedOrigins();
+  if (allowed.has(origin.replace(/\/$/, ""))) return true;
+
+  // Same Vercel project: browser Origin is the frontend URL while /api is
+  // rewritten to the backend service — allow related *.vercel.app hosts.
+  try {
+    const { protocol, hostname } = new URL(origin);
+    if (protocol !== "https:" || !hostname.endsWith(".vercel.app")) {
+      return false;
+    }
+
+    const productionHost = (
+      process.env.VERCEL_PROJECT_PRODUCTION_URL || ""
+    ).replace(/^https?:\/\//, "");
+    if (productionHost && hostname === productionHost) return true;
+
+    // Preview deployments: <project>-<hash>-<team>.vercel.app
+    const projectSlug = productionHost.split(".")[0];
+    if (projectSlug && hostname.startsWith(`${projectSlug}-`)) return true;
+
+    // Fallback when production URL env is missing but we are on Vercel
+    if (process.env.VERCEL === "1" || process.env.VERCEL === "true") {
+      return hostname.startsWith("nexora-admin");
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+};
+
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-    
-    // In development (default), allow all localhost origins
-    const isDevelopment = !process.env.NODE_ENV || process.env.NODE_ENV !== 'production';
-    const isLocalhost = origin && (
-      origin.startsWith('http://localhost:') || 
-      origin.startsWith('http://127.0.0.1:')
-    );
-    
-    // Always allow localhost in development (default behavior)
-    if (isDevelopment && isLocalhost) {
-      console.log(`[CORS] Allowing localhost origin: ${origin}`);
-      return callback(null, true);
-    }
-    
-    // In production, check against allowed origins
-    const allowedOrigins = process.env.FRONTEND_URL 
-      ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-      : ["http://localhost:5173", "http://localhost:5174"];
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
+    console.warn(`[CORS] Blocked origin: ${origin}`);
+    return callback(null, false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Set-Cookie']
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+  exposedHeaders: ["Set-Cookie"],
 };
 
 app.use(cors(corsOptions));
