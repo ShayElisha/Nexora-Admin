@@ -358,6 +358,8 @@
     "invalidCredentials": "פרטי התחברות שגויים",
     "dontHaveAccount": "אין לך חשבון?",
     "createAccount": "צור חשבון",
+    "show": "הצג",
+    "hide": "הסתר",
     "showPassword": "הצג סיסמה",
     "hidePassword": "הסתר סיסמה"
   },

@@ -74,7 +74,7 @@ export default function Login() {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder={t("login.passwordPlaceholder")}
-                className={`input ${isRTL ? "ps-12" : "pe-12"}`}
+                className="input pe-14"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -83,12 +83,12 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className={`absolute top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] ${
-                  isRTL ? "start-3" : "end-3"
-                }`}
-                aria-label="Toggle password"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                aria-label={
+                  showPassword ? t("login.hidePassword") : t("login.showPassword")
+                }
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t("login.hide") : t("login.show")}
               </button>
             </div>
           </div>

@@ -358,6 +358,8 @@
     "invalidCredentials": "Invalid credentials",
     "dontHaveAccount": "Don't have an account?",
     "createAccount": "Create Account",
+    "show": "Show",
+    "hide": "Hide",
     "showPassword": "Show password",
     "hidePassword": "Hide password"
   },
