@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { fetchAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser } from "../api/api";
+import EmptyState from "../components/ui/EmptyState.jsx";
+import { formatDateLong } from "../utils/formatDate.js";
 
 export default function UsersManagement() {
+  const { t: tEmpty } = useTranslation();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -164,56 +168,48 @@ export default function UsersManagement() {
 
         {/* Users List */}
         {!loading && !error && (
-          <div className="space-y-6 animate-in" style={{ animationDelay: "0.2s" }}>
+          <div className="max-w-4xl space-y-4 animate-in" style={{ animationDelay: "0.2s" }}>
             {filtered.map((user, index) => (
               <div
                 key={user._id}
-                className="card border p-8 hover:border-[var(--gray-400)] transition-all"
+                className="card card-elevated p-5 hover:shadow-md transition-shadow"
                 style={{
                   animationDelay: `${0.3 + index * 0.05}s`,
                   animation: "fadeIn 0.4s ease-out backwards",
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6 flex-1">
-                    <div className="w-14 h-14 bg-[var(--black)] text-white flex items-center justify-center font-medium text-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-semibold text-lg shrink-0">
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-medium mb-2">{user.name}</h3>
-                      <div className="text-sm text-[var(--gray-500)] font-light mb-2">{user.email}</div>
-                      <span className="badge badge-success">{user.role || "Admin"}</span>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                        {user.name}
+                      </h3>
+                      <div className="text-sm text-[var(--text-secondary)] truncate">{user.email}</div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="badge badge-success">{user.role || "Admin"}</span>
+                        <span className="text-xs text-[var(--text-muted)]">
+                          Created {user.createdAt ? formatDateLong(user.createdAt) : "—"}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:shrink-0">
                     <button
                       onClick={() => setEditingUser(user)}
-                      className="btn btn-secondary px-6"
+                      className="btn btn-secondary btn-compact"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteUser(user._id)}
-                      className="btn btn-secondary px-6"
+                      className="btn btn-secondary btn-compact text-rose-600"
                     >
                       Delete
                     </button>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-[var(--gray-200)]">
-                  <div className="flex items-center gap-2 text-xs text-[var(--gray-400)] font-light">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>
-                      Created {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }) : "—"}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -221,19 +217,14 @@ export default function UsersManagement() {
 
             {/* Empty State */}
             {filtered.length === 0 && (
-              <div className="text-center py-32 animate-in">
-                <div className="w-20 h-20 mx-auto mb-8 border-2 border-[var(--gray-200)] flex items-center justify-center">
-                  <svg className="w-10 h-10 text-[var(--gray-300)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-light mb-4">
-                  {searchTerm ? "No Results" : "No Users"}
-                </h3>
-                <p className="text-[var(--gray-500)] font-light">
-                  {searchTerm ? "Try a different search" : "Add your first admin user"}
-                </p>
-              </div>
+              <EmptyState
+                title={searchTerm ? "No Results" : tEmpty("empty.noUsers")}
+                description={
+                  searchTerm ? "Try a different search" : tEmpty("empty.noUsersDesc")
+                }
+                actionLabel={!searchTerm ? "+ Add User" : undefined}
+                onAction={!searchTerm ? () => setShowAddModal(true) : undefined}
+              />
             )}
           </div>
         )}
@@ -338,12 +329,12 @@ function UserModal({ user, onClose, onSave }) {
             </select>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button type="submit" className="btn btn-primary flex-1">
-              {user ? "Update" : "Add"}
-            </button>
-            <button type="button" onClick={onClose} className="btn btn-secondary flex-1">
+          <div className="flex flex-wrap justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="btn btn-secondary btn-compact">
               Cancel
+            </button>
+            <button type="submit" className="btn btn-primary btn-compact">
+              {user ? "Update" : "Add"}
             </button>
           </div>
         </form>

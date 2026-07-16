@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { fetchAdminUsers } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
+import EmptyState from "../components/ui/EmptyState.jsx";
 
 export default function SessionManagement() {
   const { t } = useTranslation();
@@ -309,9 +310,10 @@ export default function SessionManagement() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-12 text-[var(--gray-500)] font-light">
-                  No active sessions found
-                </div>
+                <EmptyState
+                  title={t("empty.noSessions")}
+                  description={t("empty.noSessionsDesc")}
+                />
               )}
             </div>
           </div>

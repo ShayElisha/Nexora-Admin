@@ -170,30 +170,31 @@ const CreateInvoice = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="min-h-screen pt-24 pb-16">
+      <div className="container max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => navigate("/invoices")}
-          className="p-2 border border-[var(--border)] bg-[var(--bg)] hover:bg-[var(--bg-alt)] transition-colors"
+          className="p-2 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] hover:bg-[var(--gray-50)] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h1 className="text-2xl font-light tracking-wider uppercase text-[var(--text-secondary)] flex items-center gap-3">
-            <FileText className="w-6 h-6" />
-            {t("invoices.createInvoice") || "Create Subscription Invoice"}
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)] flex items-center gap-3">
+            <FileText className="w-6 h-6 text-[var(--primary)]" />
+            {t("invoices.createInvoice")}
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Create an invoice for a subscription plan
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            {t("invoices.createSubscriptionInvoice")}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="form-shell-wide space-y-6">
         {/* Company Selection */}
-        <div className="p-4 border border-[var(--border)] bg-[var(--bg)]">
+        <div className="card card-elevated p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-[var(--text-secondary)]">
             {t("invoices.selectCompany")}
           </h2>
@@ -210,7 +211,7 @@ const CreateInvoice = () => {
               onChange={(e) =>
                 setFormData({ ...formData, companyId: e.target.value, customerId: "" })
               }
-              className="w-full px-4 py-2 text-xs border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)]"
+              className="input"
               required
             >
               <option value="">{t("invoices.selectCompany")}</option>
@@ -486,18 +487,18 @@ const CreateInvoice = () => {
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={() => navigate("/invoices")}
-            className="px-6 py-2 text-xs uppercase tracking-wider border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:border-[var(--text-secondary)] transition-colors"
+            className="btn btn-secondary btn-compact"
           >
             {t("invoices.cancel")}
           </button>
           <button
             type="submit"
             disabled={submitting || !formData.companyId}
-            className="px-6 py-2 text-xs uppercase tracking-wider border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="btn btn-primary btn-compact disabled:opacity-50 flex items-center gap-2"
           >
             {submitting ? (
               <>
@@ -513,6 +514,7 @@ const CreateInvoice = () => {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 };

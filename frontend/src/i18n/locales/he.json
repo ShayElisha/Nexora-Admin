@@ -18,7 +18,10 @@
     "noAlerts": "אין התראות",
     "signIn": "התחברות",
     "signOut": "התנתקות",
-    "register": "הרשמה"
+    "register": "הרשמה",
+    "userActivity": "פעילות משתמשים",
+    "sessions": "סשנים",
+    "more": "עוד"
   },
   "dashboard": {
     "title": "לוח בקרה",
@@ -613,7 +616,17 @@
       "unpaid": "לא שולם",
       "partiallypaid": "שולם חלקית",
       "paid": "שולם"
-    }
+    },
+    "createInvoice": "צור חשבונית",
+    "createdSuccessfully": "החשבונית נוצרה בהצלחה",
+    "failedToCreate": "יצירת החשבונית נכשלה",
+    "basicInformation": "מידע בסיסי",
+    "taxRate": "שיעור מס",
+    "summary": "סיכום",
+    "optional": "(אופציונלי)",
+    "cancel": "ביטול",
+    "creating": "יוצר...",
+    "createSubscriptionInvoice": "צור חשבונית מנוי"
   },
   "communication": {
     "title": "מרכז תקשורת",
@@ -621,7 +634,7 @@
     "sendMessage": "שלח הודעה",
     "templates": "תבניות",
     "history": "היסטוריה",
-    "scheduled": "מתוזמנות",
+    "scheduled": "מתוזמן",
     "loading": "טוען...",
     "selectCompanies": "בחר חברות",
     "selectAll": "בחר הכל",
@@ -677,7 +690,6 @@
     "status": "סטטוס",
     "sent": "נשלח",
     "failed": "נכשל",
-    "scheduled": "מתוזמן",
     "draft": "טיוטה",
     "recipients": "נמענים",
     "sentAt": "נשלח ב",
@@ -686,6 +698,21 @@
     "deleteMessageConfirm": "האם אתה בטוח שברצונך למחוק הודעה זו?",
     "messageDeleted": "הודעה נמחקה בהצלחה",
     "failedToDeleteMessage": "נכשל במחיקת הודעה"
+  },
+  "empty": {
+    "title": "אין נתונים להצגה",
+    "description": "לא נמצאו פריטים.",
+    "noSessions": "לא נמצאו סשנים פעילים",
+    "noSessionsDesc": "כשמשתמשים יתחברו, הסשנים שלהם יופיעו כאן.",
+    "noAlerts": "לא נמצאו התראות",
+    "noAlertsDesc": "הכול מעודכן. התראות חדשות יופיעו כאן.",
+    "noUsers": "לא נמצאו משתמשים",
+    "noUsersDesc": "הוסף את המשתמש הראשון כדי להתחיל.",
+    "createFirst": "צור פריט ראשון"
+  },
+  "unauthorized": {
+    "title": "אין הרשאה",
+    "description": "אין לך הרשאה לצפות בעמוד זה.",
+    "signIn": "עבור להתחברות"
   }
 }
-

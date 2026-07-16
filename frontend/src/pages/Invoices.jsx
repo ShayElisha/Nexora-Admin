@@ -130,7 +130,7 @@ export default function Invoices() {
         </div>
         <button
           onClick={() => navigate("/invoices/create")}
-          className="px-4 py-2 text-xs uppercase tracking-wider border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:border-[var(--text-secondary)] transition-colors flex items-center gap-2"
+          className="btn btn-primary btn-compact flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           {t("invoices.createInvoice")}
@@ -139,57 +139,37 @@ export default function Invoices() {
 
       {/* Statistics */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <div className="p-4 border border-[var(--border)] bg-[var(--bg)]">
-            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">
-              {t("invoices.total")}
-            </p>
-            <p className="text-2xl font-light text-[var(--text-secondary)]">
-              {stats.total || 0}
-            </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="kpi-card kpi-card-slate">
+            <p className="kpi-label">{t("invoices.total")}</p>
+            <p className="kpi-value">{stats.total || 0}</p>
           </div>
-          <div className="p-4 border border-gray-300 bg-gray-50">
-            <p className="text-xs text-gray-700 uppercase tracking-wider mb-1">
-              {t("invoices.draft")}
-            </p>
-            <p className="text-2xl font-light text-gray-700">
-              {stats.draft || 0}
-            </p>
+          <div className="kpi-card kpi-card-slate">
+            <p className="kpi-label">{t("invoices.draft")}</p>
+            <p className="kpi-value">{stats.draft || 0}</p>
           </div>
-          <div className="p-4 border border-blue-300 bg-blue-50">
-            <p className="text-xs text-blue-700 uppercase tracking-wider mb-1">
-              {t("invoices.sent")}
-            </p>
-            <p className="text-2xl font-light text-blue-700">
-              {stats.sent || 0}
-            </p>
+          <div className="kpi-card kpi-card-blue">
+            <p className="kpi-label">{t("invoices.sent")}</p>
+            <p className="kpi-value">{stats.sent || 0}</p>
           </div>
-          <div className="p-4 border border-green-300 bg-green-50">
-            <p className="text-xs text-green-700 uppercase tracking-wider mb-1">
-              {t("invoices.paid")}
-            </p>
-            <p className="text-2xl font-light text-green-700">
-              {stats.paid || 0}
-            </p>
+          <div className="kpi-card kpi-card-green">
+            <p className="kpi-label">{t("invoices.paid")}</p>
+            <p className="kpi-value">{stats.paid || 0}</p>
           </div>
-          <div className="p-4 border border-red-300 bg-red-50">
-            <p className="text-xs text-red-700 uppercase tracking-wider mb-1">
-              {t("invoices.overdue")}
-            </p>
-            <p className="text-2xl font-light text-red-700">
-              {stats.overdue || 0}
-            </p>
+          <div className="kpi-card kpi-card-rose">
+            <p className="kpi-label">{t("invoices.overdue")}</p>
+            <p className="kpi-value">{stats.overdue || 0}</p>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="mb-6 p-4 border border-[var(--border)] bg-[var(--bg)]">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
+      <div className="mb-6 card card-elevated p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <Filter className="w-4 h-4 text-[var(--text-muted)]" />
-            <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-              {t("invoices.filters")}:
+            <span className="text-sm text-[var(--text-muted)]">
+              {t("invoices.filters")}
             </span>
           </div>
 

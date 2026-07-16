@@ -5,6 +5,7 @@ import { fetchSupportTickets, updateSupportTicketStatus } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
 import { format } from "date-fns";
 import { Ticket, Search, Filter, MessageSquare, User, Calendar, Building } from "lucide-react";
+import EmptyState from "../components/ui/EmptyState.jsx";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -149,57 +150,54 @@ export default function SupportTickets() {
 
         {/* Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="card">
-            <p className="text-sm text-[var(--text-muted)] mb-1">{t("supportTickets.total")}</p>
-            <p className="text-3xl font-bold">{stats.total}</p>
+          <div className="kpi-card kpi-card-slate">
+            <p className="kpi-label">{t("supportTickets.total")}</p>
+            <p className="kpi-value">{stats.total}</p>
           </div>
-          <div className="card">
-            <p className="text-sm text-[var(--text-muted)] mb-1">{t("supportTickets.open")}</p>
-            <p className="text-3xl font-bold text-yellow-600">{stats.open}</p>
+          <div className="kpi-card kpi-card-amber">
+            <p className="kpi-label">{t("supportTickets.open")}</p>
+            <p className="kpi-value">{stats.open}</p>
           </div>
-          <div className="card">
-            <p className="text-sm text-[var(--text-muted)] mb-1">{t("supportTickets.inProgress")}</p>
-            <p className="text-3xl font-bold text-blue-600">{stats.inProgress}</p>
+          <div className="kpi-card kpi-card-blue">
+            <p className="kpi-label">{t("supportTickets.inProgress")}</p>
+            <p className="kpi-value">{stats.inProgress}</p>
           </div>
-          <div className="card">
-            <p className="text-sm text-[var(--text-muted)] mb-1">{t("supportTickets.resolved")}</p>
-            <p className="text-3xl font-bold text-green-600">{stats.resolved}</p>
+          <div className="kpi-card kpi-card-green">
+            <p className="kpi-label">{t("supportTickets.resolved")}</p>
+            <p className="kpi-value">{stats.resolved}</p>
           </div>
-          <div className="card">
-            <p className="text-sm text-[var(--text-muted)] mb-1">{t("supportTickets.closed")}</p>
-            <p className="text-3xl font-bold text-gray-600">{stats.closed}</p>
+          <div className="kpi-card kpi-card-rose">
+            <p className="kpi-label">{t("supportTickets.closed")}</p>
+            <p className="kpi-value">{stats.closed}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="card">
-          <div className={`flex flex-wrap gap-4 items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="flex items-center gap-2">
-              <Filter size={20} className="text-[var(--text-muted)]" />
-              <span className="text-sm text-[var(--text-muted)]">{t("supportTickets.filters")}:</span>
+        <div className="card card-elevated p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 shrink-0">
+              <Filter size={18} className="text-[var(--text-muted)]" />
+              <span className="text-sm text-[var(--text-muted)]">{t("supportTickets.filters")}</span>
             </div>
 
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search
-                  className={`absolute top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] ${isRTL ? 'right-3' : 'left-3'}`}
-                  size={20}
-                />
-                <input
-                  type="text"
-                  placeholder={t("supportTickets.searchPlaceholder")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`input w-full ${isRTL ? 'pr-10' : 'pl-10'}`}
-                  dir={isRTL ? 'rtl' : 'ltr'}
-                />
-              </div>
+            <div className="relative flex-1 min-w-[200px] max-w-md">
+              <Search
+                className="absolute top-1/2 -translate-y-1/2 start-3 text-[var(--text-muted)]"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder={t("supportTickets.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input ps-10"
+              />
             </div>
 
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="input"
+              className="input w-auto min-w-[9rem]"
             >
               <option value="all">{t("supportTickets.allStatus")}</option>
               <option value="Open">{t("supportTickets.open")}</option>
@@ -211,7 +209,7 @@ export default function SupportTickets() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="input"
+              className="input w-auto min-w-[10rem]"
             >
               <option value="all">{t("supportTickets.allCategories")}</option>
               <option value="Bug Report">{t("supportTickets.categories.Bug Report")}</option>
@@ -225,7 +223,7 @@ export default function SupportTickets() {
             <select
               value={filterCompany}
               onChange={(e) => setFilterCompany(e.target.value)}
-              className="input"
+              className="input w-auto min-w-[10rem]"
             >
               <option value="all">{t("supportTickets.allCompanies")}</option>
               {companies.map((company) => (
@@ -256,11 +254,12 @@ export default function SupportTickets() {
         {!loading && !error && (
           <div className="space-y-4">
             {currentTickets.length === 0 ? (
-              <div className="card text-center py-16">
-                <Ticket size={48} className="mx-auto mb-4 text-[var(--text-muted)]" />
-                <p className="text-[var(--text-secondary)] text-lg">
-                  {t("supportTickets.noTickets")}
-                </p>
+              <div className="card card-elevated">
+                <EmptyState
+                  icon={<Ticket size={28} />}
+                  title={t("supportTickets.noTickets")}
+                  description={t("empty.description")}
+                />
               </div>
             ) : (
               currentTickets.map((ticket) => (

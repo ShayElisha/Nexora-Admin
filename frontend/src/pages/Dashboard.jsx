@@ -8,8 +8,8 @@ import {
   fetchAlerts,
 } from "../api/api";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   BarChart,
   Bar,
   PieChart,
@@ -349,8 +349,14 @@ export default function Dashboard() {
               }
             >
               <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" vertical={false} />
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="dashboardGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity={0.28} />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
                   <XAxis
                     dataKey="month"
                     stroke="var(--text-muted)"
@@ -365,15 +371,16 @@ export default function Dashboard() {
                     tickLine={false}
                   />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="count"
                     stroke="#2563eb"
                     strokeWidth={2.5}
+                    fill="url(#dashboardGrowthFill)"
                     dot={{ fill: "#2563eb", r: 4, strokeWidth: 0 }}
                     activeDot={{ r: 6 }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </SectionCard>
           )}
@@ -393,21 +400,31 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie
-                    data={planDistribution}
+                    data={planDistribution.filter((d) => d.value > 0)}
                     cx="50%"
                     cy="50%"
                     innerRadius={58}
                     outerRadius={96}
                     paddingAngle={3}
                     dataKey="value"
-                    cornerRadius={6}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    nameKey="name"
                   >
-                    {planDistribution.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
+                    {planDistribution
+                      .filter((d) => d.value > 0)
+                      .map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value, entry) => {
+                      const total = planDistribution.reduce((s, d) => s + d.value, 0) || 1;
+                      const pct = (((entry?.payload?.value || 0) / total) * 100).toFixed(0);
+                      return `${value} (${pct}%)`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </SectionCard>

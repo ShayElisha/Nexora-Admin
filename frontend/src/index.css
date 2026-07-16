@@ -341,19 +341,113 @@ body {
 /* Inputs */
 .input {
   width: 100%;
-  padding: 0.625rem 0.875rem;
+  padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
+  line-height: 1.5;
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  background: var(--bg-elevated);
   color: var(--text);
-  transition: all 0.2s;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-shell {
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.form-shell-wide {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+.btn-compact {
+  width: fit-content;
+  padding: 0.625rem 1.5rem;
+}
+
+.kpi-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  text-align: start;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-card-blue {
+  background: rgba(37, 99, 235, 0.06);
+  color: #1d4ed8;
+}
+
+.kpi-card-green {
+  background: rgba(16, 185, 129, 0.08);
+  color: #047857;
+}
+
+.kpi-card-amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+.kpi-card-rose {
+  background: rgba(244, 63, 94, 0.08);
+  color: #be123c;
+}
+
+.kpi-card-slate {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+[data-theme="dark"] .kpi-card-blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .kpi-card-green {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .kpi-card-amber {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .kpi-card-rose {
+  background: rgba(244, 63, 94, 0.14);
+  color: #fda4af;
+}
+
+[data-theme="dark"] .kpi-card-slate {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 /* Badges — pill-shaped status chips */

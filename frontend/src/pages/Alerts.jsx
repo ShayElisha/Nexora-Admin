@@ -12,6 +12,7 @@ import {
 } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
 import { format } from "date-fns";
+import EmptyState from "../components/ui/EmptyState.jsx";
 import {
   Bell,
   Search,
@@ -424,9 +425,12 @@ export default function Alerts() {
           <p className="text-red-500">{error}</p>
         </div>
       ) : filteredAlerts.length === 0 ? (
-        <div className="text-center py-12">
-          <Bell className="w-12 h-12 mx-auto mb-4 text-[var(--text-muted)]" />
-          <p className="text-[var(--text-muted)]">{t("alerts.noAlerts")}</p>
+        <div className="card card-elevated">
+          <EmptyState
+            icon={<Bell className="w-6 h-6" />}
+            title={t("empty.noAlerts")}
+            description={t("empty.noAlertsDesc")}
+          />
         </div>
       ) : (
         <div className="space-y-3">

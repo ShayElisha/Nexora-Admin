@@ -27,6 +27,7 @@ import CreateInvoice from "./pages/CreateInvoice.jsx";
 import CommunicationCenter from "./pages/CommunicationCenter.jsx";
 import UserActivityMonitor from "./pages/UserActivityMonitor.jsx";
 import SessionManagement from "./pages/SessionManagement.jsx";
+import UnauthorizedCard from "./components/ui/UnauthorizedCard.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -67,8 +68,23 @@ function App() {
   };
 
   const PrivateRoute = ({ children }) => {
-    if (loading) return <div>Loading...</div>;
-    return isAuthenticated ? children : <Navigate to="/" replace />;
+    if (loading) {
+      return (
+        <div className="min-h-[50vh] flex items-center justify-center">
+          <div className="spinner" />
+        </div>
+      );
+    }
+    if (!isAuthenticated) {
+      return (
+        <UnauthorizedCard
+          onAction={() => {
+            window.location.href = "/";
+          }}
+        />
+      );
+    }
+    return children;
   };
 
   if (loading) {
