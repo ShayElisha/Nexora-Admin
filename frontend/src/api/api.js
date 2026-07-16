@@ -427,12 +427,19 @@ export const getComprehensiveAnalytics = async (token) => {
 
 export const fetchSupportTickets = async (token) => {
   try {
-    const res = await axios.get(`${NEXORA_API_URL}/support-tickets`, {
+    // Prefer SuperAdmin-dedicated route (no Nexora employee cookie needed)
+    const res = await axios.get(`${NEXORA_API_URL}/support-tickets/superadmin/all`, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      withCredentials: true,
+      withCredentials: false,
     });
-    return res.data?.data ?? res.data;
+    const data = res.data?.data ?? res.data;
+    return Array.isArray(data) ? data : [];
   } catch (err) {
+    // Soft-fail: empty list instead of crashing the page when unauthorized / offline
+    const status = err.response?.status;
+    if (status === 401 || status === 403 || status === 404) {
+      return [];
+    }
     throw err.response?.data || err.message;
   }
 };

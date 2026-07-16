@@ -82,15 +82,17 @@ export default function SupportTickets() {
         const token = JSON.parse(localStorage.getItem("user"))?.token;
         const data = await fetchSupportTickets(token);
         setTickets(Array.isArray(data) ? data : []);
-      } catch (e) {
-        setError(e?.message || t("supportTickets.failedToLoad"));
-        showToast(e?.message || t("supportTickets.failedToLoad"), "error");
+        setError("");
+      } catch {
+        // No data / auth / network — show empty state, not an error panel
+        setTickets([]);
+        setError("");
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [showToast]);
+  }, []);
 
   const handleStatusChange = async (ticketId, newStatus) => {
     const token = JSON.parse(localStorage.getItem("user"))?.token;
