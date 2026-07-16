@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchAllCompanies, updateCompanyStatus } from "../api/api";
 import { useNavigate } from "react-router-dom";
 
 export default function SubscriptionManagement() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,14 +21,14 @@ export default function SubscriptionManagement() {
         const data = await fetchAllCompanies(token);
         setCompanies(Array.isArray(data) ? data : []);
       } catch (e) {
-        setError(e?.message || "Failed to load companies");
+        setError(e?.message || t("subscriptions.failedToLoad"));
       } finally {
         setLoading(false);
       }
     };
 
     loadCompanies();
-  }, []);
+  }, [t]);
 
   const showNotification = (message, type = "success") => {
     setNotification({ message, type });
@@ -52,9 +54,9 @@ export default function SubscriptionManagement() {
         )
       );
       setEditingSubscription(null);
-      showNotification("Subscription updated successfully");
+      showNotification(t("subscriptions.updatedSuccess"));
     } catch (e) {
-      showNotification(e?.message || "Failed to update subscription", "error");
+      showNotification(e?.message || t("subscriptions.failedToUpdate"), "error");
     }
   };
 
@@ -79,7 +81,7 @@ export default function SubscriptionManagement() {
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-6 pb-16">
       {/* Toast */}
       {notification && (
         <div
@@ -107,8 +109,8 @@ export default function SubscriptionManagement() {
       <div className="container">
         {/* Header */}
         <div className="mb-20 animate-in">
-          <h1 className="text-6xl font-light mb-8 tracking-tight">Subscriptions</h1>
-          <p className="text-xl text-[var(--gray-500)] font-light">Manage company subscriptions</p>
+          <h1 className="text-6xl font-light mb-8 tracking-tight">{t("subscriptions.pageTitle")}</h1>
+          <p className="text-xl text-[var(--gray-500)] font-light">{t("subscriptions.pageSubtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -117,7 +119,7 @@ export default function SubscriptionManagement() {
             <div className="relative flex-1 max-w-2xl">
               <input
                 type="text"
-                placeholder="Search companies..."
+                placeholder={t("companies.search")}
                 className="input"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,7 +142,7 @@ export default function SubscriptionManagement() {
               onChange={(e) => setFilterPlan(e.target.value)}
               style={{ maxWidth: "200px" }}
             >
-              <option value="all">All Plans</option>
+              <option value="all">{t("subscriptions.allPlans")}</option>
               {getAvailablePlans().map((plan) => (
                 <option key={plan} value={plan}>
                   {plan}
@@ -154,7 +156,7 @@ export default function SubscriptionManagement() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-32">
             <div className="spinner mb-6" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
-            <p className="text-[var(--gray-500)] font-light">Loading...</p>
+            <p className="text-[var(--gray-500)] font-light">{t("common.loading")}</p>
           </div>
         )}
 
@@ -193,15 +195,19 @@ export default function SubscriptionManagement() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Current Plan</div>
+                        <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                          {t("subscriptions.currentPlan")}
+                        </div>
                         <div className="text-lg font-medium text-[var(--gray-700)]">
-                          {company.subscription?.plan || "No Plan"}
+                          {company.subscription?.plan || t("subscriptions.noPlan")}
                         </div>
                       </div>
 
                       {company.subscription?.startDate && (
                         <div>
-                          <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Start Date</div>
+                          <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                            {t("payments.startDate")}
+                          </div>
                           <div className="text-sm text-[var(--gray-700)] font-light">
                             {new Date(company.subscription.startDate).toLocaleDateString("en-US", {
                               month: "short",
@@ -214,7 +220,9 @@ export default function SubscriptionManagement() {
 
                       {company.subscription?.endDate && (
                         <div>
-                          <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">End Date</div>
+                          <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                            {t("payments.endDate")}
+                          </div>
                           <div className="text-sm text-[var(--gray-700)] font-light">
                             {new Date(company.subscription.endDate).toLocaleDateString("en-US", {
                               month: "short",
@@ -232,13 +240,13 @@ export default function SubscriptionManagement() {
                       onClick={() => setEditingSubscription(company)}
                       className="btn btn-primary px-8"
                     >
-                      Manage
+                      {t("subscriptions.manage")}
                     </button>
                     <button
                       onClick={() => navigate(`/companies/${company._id}`)}
                       className="btn btn-secondary px-8"
                     >
-                      View Details
+                      {t("subscriptions.viewDetails")}
                     </button>
                   </div>
                 </div>
@@ -254,10 +262,14 @@ export default function SubscriptionManagement() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-light mb-4">
-                  {searchTerm || filterPlan !== "all" ? "No Results" : "No Subscriptions"}
+                  {searchTerm || filterPlan !== "all"
+                    ? t("companies.noResults")
+                    : t("subscriptions.empty")}
                 </h3>
                 <p className="text-[var(--gray-500)] font-light">
-                  {searchTerm || filterPlan !== "all" ? "Try adjusting your filters" : "Subscriptions will appear here"}
+                  {searchTerm || filterPlan !== "all"
+                    ? t("subscriptions.tryAdjustFilters")
+                    : t("subscriptions.willAppear")}
                 </p>
               </div>
             )}
@@ -278,6 +290,7 @@ export default function SubscriptionManagement() {
 }
 
 function SubscriptionModal({ company, onClose, onSave }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     plan: company.subscription?.plan || "",
     startDate: company.subscription?.startDate
@@ -301,7 +314,7 @@ function SubscriptionModal({ company, onClose, onSave }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-md w-full animate-scale">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-light">Manage Subscription</h2>
+          <h2 className="text-2xl font-light">{t("companyDetails.manageSubscription")}</h2>
           <button onClick={onClose} className="text-[var(--gray-400)] hover:text-[var(--black)]">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -310,28 +323,35 @@ function SubscriptionModal({ company, onClose, onSave }) {
         </div>
 
         <div className="mb-6">
-          <p className="text-sm text-[var(--gray-600)] font-light">Company: <span className="font-medium">{company.name}</span></p>
+          <p className="text-sm text-[var(--gray-600)] font-light">
+            {t("subscriptions.companyLabel")}{" "}
+            <span className="font-medium">{company.name}</span>
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Plan</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("subscriptions.plan")}
+            </label>
             <select
               className="input"
               value={formData.plan}
               onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
               required
             >
-              <option value="">Select Plan</option>
-              <option value="Basic">Basic</option>
-              <option value="Professional">Professional</option>
-              <option value="Enterprise">Enterprise</option>
-              <option value="Premium">Premium</option>
+              <option value="">{t("subscriptions.selectPlan")}</option>
+              <option value="Basic">{t("subscriptions.plans.basic")}</option>
+              <option value="Professional">{t("subscriptions.plans.professional")}</option>
+              <option value="Enterprise">{t("subscriptions.plans.enterprise")}</option>
+              <option value="Premium">{t("subscriptions.plans.premium")}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Start Date</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("payments.startDate")}
+            </label>
             <input
               type="date"
               className="input"
@@ -341,7 +361,9 @@ function SubscriptionModal({ company, onClose, onSave }) {
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">End Date</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("payments.endDate")}
+            </label>
             <input
               type="date"
               className="input"
@@ -352,10 +374,10 @@ function SubscriptionModal({ company, onClose, onSave }) {
 
           <div className="flex gap-3 pt-4">
             <button type="submit" className="btn btn-primary flex-1">
-              Update
+              {t("subscriptions.update")}
             </button>
             <button type="button" onClick={onClose} className="btn btn-secondary flex-1">
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         </form>

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchAllCompanies } from "../api/api";
 
 export default function ActivityLog() {
+  const { t } = useTranslation();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,10 +26,10 @@ export default function ActivityLog() {
             activityList.push({
               id: `${company._id}-created`,
               type: "registration",
-              action: "Company Registered",
+              action: t("activity.actions.registered"),
               companyName: company.name,
               companyId: company._id,
-              user: "System",
+              user: t("activity.actors.system"),
               timestamp: company.createdAt,
               details: `${company.name} was registered`,
             });
@@ -38,10 +40,10 @@ export default function ActivityLog() {
             activityList.push({
               id: `${company._id}-updated`,
               type: "update",
-              action: "Company Updated",
+              action: t("activity.actions.updated"),
               companyName: company.name,
               companyId: company._id,
-              user: "System",
+              user: t("activity.actors.system"),
               timestamp: company.updatedAt,
               details: `${company.name} information was updated`,
             });
@@ -52,10 +54,10 @@ export default function ActivityLog() {
             activityList.push({
               id: `${company._id}-status`,
               type: "status_change",
-              action: `Status: ${company.status}`,
+              action: t("activity.actions.statusChanged", { status: company.status }),
               companyName: company.name,
               companyId: company._id,
-              user: "Admin",
+              user: t("activity.actors.admin"),
               timestamp: company.updatedAt || company.createdAt,
               details: `${company.name} status set to ${company.status}`,
             });
@@ -67,14 +69,14 @@ export default function ActivityLog() {
 
         setActivities(activityList);
       } catch (e) {
-        setError(e?.message || "Failed to load activity log");
+        setError(e?.message || t("activity.failedToLoad"));
       } finally {
         setLoading(false);
       }
     };
 
     loadActivities();
-  }, []);
+  }, [t]);
 
   const getActivityIcon = (type) => {
     switch (type) {
@@ -117,12 +119,12 @@ export default function ActivityLog() {
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-6 pb-16">
       <div className="container">
         {/* Header */}
         <div className="mb-20 animate-in">
-          <h1 className="text-6xl font-light mb-8 tracking-tight">Activity Log</h1>
-          <p className="text-xl text-[var(--gray-500)] font-light">Track all system activities</p>
+          <h1 className="text-6xl font-light mb-8 tracking-tight">{t("activity.title")}</h1>
+          <p className="text-xl text-[var(--gray-500)] font-light">{t("activity.pageSubtitle")}</p>
         </div>
 
         {/* Filters */}
@@ -131,7 +133,7 @@ export default function ActivityLog() {
             <div className="relative flex-1 max-w-2xl">
               <input
                 type="text"
-                placeholder="Search activities..."
+                placeholder={t("activity.searchPlaceholder")}
                 className="input"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -154,10 +156,10 @@ export default function ActivityLog() {
               onChange={(e) => setFilterType(e.target.value)}
               style={{ maxWidth: "200px" }}
             >
-              <option value="all">All Types</option>
-              <option value="registration">Registrations</option>
-              <option value="update">Updates</option>
-              <option value="status_change">Status Changes</option>
+              <option value="all">{t("activity.allTypes")}</option>
+              <option value="registration">{t("activity.filters.registrations")}</option>
+              <option value="update">{t("activity.filters.updates")}</option>
+              <option value="status_change">{t("activity.filters.statusChanges")}</option>
             </select>
           </div>
         </div>
@@ -166,7 +168,7 @@ export default function ActivityLog() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-32">
             <div className="spinner mb-6" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
-            <p className="text-[var(--gray-500)] font-light">Loading...</p>
+            <p className="text-[var(--gray-500)] font-light">{t("common.loading")}</p>
           </div>
         )}
 
@@ -246,10 +248,14 @@ export default function ActivityLog() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-light mb-4">
-                  {searchTerm || filterType !== "all" ? "No Results" : "No Activity"}
+                  {searchTerm || filterType !== "all"
+                    ? t("companies.noResults")
+                    : t("activity.emptyTitle")}
                 </h3>
                 <p className="text-[var(--gray-500)] font-light">
-                  {searchTerm || filterType !== "all" ? "Try adjusting your filters" : "Activity will appear here"}
+                  {searchTerm || filterType !== "all"
+                    ? t("activity.tryAdjustFilters")
+                    : t("activity.willAppear")}
                 </p>
               </div>
             )}

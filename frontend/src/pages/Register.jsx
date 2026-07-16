@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { registerUser } from "../api/api";
 
 export default function Register() {
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const isRTL = i18n.language === "he";
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -19,128 +22,76 @@ export default function Register() {
         localStorage.setItem("user", JSON.stringify(data.user));
         window.location.replace("/dashboard");
       } else {
-        setError(data.message || "Registration failed");
+        setError(data.message || t("register.failed"));
         setLoading(false);
       }
     } catch (err) {
-      setError(err.message || err.error || "Registration failed");
+      setError(err.message || err.error || t("register.failed"));
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-20 animate-in">
-          <h1 className="text-5xl font-light mb-8 tracking-tight">Create Account</h1>
-          <p className="text-xl text-[var(--gray-500)] font-light">Join Nexora today</p>
-        </div>
-
-        {/* Form */}
-        <div className="animate-in" style={{ animationDelay: '0.1s' }}>
-          {error && (
-            <div className="mb-8 p-4 border border-[var(--gray-300)] bg-[var(--gray-50)] text-sm text-[var(--gray-700)] animate-scale">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleRegister} className="space-y-12">
-            <div>
-              <label className="block text-xs uppercase tracking-wider font-medium mb-5 text-[var(--gray-600)]">
-                Full Name
-              </label>
-              <input
-                type="text"
-                placeholder="John Doe"
-                className="input"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                autoComplete="name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-wider font-medium mb-5 text-[var(--gray-600)]">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-wider font-medium mb-5 text-[var(--gray-600)]">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="Create password"
-                className="input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-              <p className="text-xs text-[var(--gray-400)] mt-3 font-light">
-                Minimum 6 characters
-              </p>
-            </div>
-
-            <div className="flex items-start gap-3 pt-6">
-              <input
-                type="checkbox"
-                id="terms"
-                required
-                className="mt-1 w-4 h-4 border-[var(--gray-300)]"
-              />
-              <label htmlFor="terms" className="text-sm text-[var(--gray-600)] font-light">
-                I agree to the{" "}
-                <a href="#" className="text-[var(--black)] underline-animate">Terms</a>
-                {" "}and{" "}
-                <a href="#" className="text-[var(--black)] underline-animate">Privacy Policy</a>
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary w-full mt-16"
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="spinner" style={{ borderTopColor: 'white', borderColor: 'rgba(255,255,255,0.2)' }}></div>
-                  <span>Creating...</span>
-                </div>
-              ) : (
-                "Create Account"
-              )}
-            </button>
-          </form>
-
-          <div className="mt-16 pt-12 border-t border-[var(--gray-200)] text-center">
-            <p className="text-sm text-[var(--gray-600)] font-light mb-6">
-              Already have an account?
-            </p>
-            <Link to="/">
-              <button type="button" className="btn btn-secondary w-full">
-                Sign In
-              </button>
-            </Link>
+    <div className="auth-stage" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="auth-card animate-in">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="brand-mark-dot" />
+            <span className="brand-mark-text text-[var(--text-primary)]">Nexora</span>
           </div>
+          <h1 className="auth-brand">{t("register.title")}</h1>
+          <p className="text-[var(--text-secondary)] text-sm">{t("register.subtitle")}</p>
         </div>
 
-        <p className="text-center text-xs text-[var(--gray-400)] mt-12 font-light uppercase tracking-wider">
-          © 2024 Nexora
-        </p>
+        {error && (
+          <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50/80 text-rose-700 px-4 py-3 text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className="space-y-5">
+          <div>
+            <label className="field-label">{t("register.name")}</label>
+            <input
+              type="text"
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="field-label">{t("register.email")}</label>
+            <input
+              type="email"
+              className="input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <label className="field-label">{t("register.password")}</label>
+            <input
+              type="password"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" disabled={loading} className="btn btn-primary w-full">
+            {loading ? t("register.creating") : t("register.createAccount")}
+          </button>
+        </form>
+
+        <div className="mt-8 pt-6 border-t border-[var(--border)] text-center text-sm text-[var(--text-secondary)]">
+          {t("register.haveAccount")}{" "}
+          <Link to="/" className="font-semibold text-[var(--primary)]">
+            {t("register.signIn")}
+          </Link>
+        </div>
       </div>
     </div>
   );

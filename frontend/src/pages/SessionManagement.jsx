@@ -128,14 +128,14 @@ export default function SessionManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+      <div className="min-h-screen pt-6 pb-16 flex items-center justify-center">
         <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-6 pb-16">
       <div className="container">
         {/* Header */}
         <div className="mb-12 animate-in">

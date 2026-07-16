@@ -21,7 +21,12 @@
     "register": "הרשמה",
     "userActivity": "פעילות משתמשים",
     "sessions": "סשנים",
-    "more": "עוד"
+    "more": "עוד",
+    "groupInsights": "תובנות",
+    "groupOps": "תפעול",
+    "groupAdmin": "ניהול",
+    "toggleMenu": "החלף תפריט",
+    "userFallback": "משתמש"
   },
   "dashboard": {
     "title": "לוח בקרה",
@@ -58,7 +63,29 @@
     "importantAlerts": "התראות חשובות",
     "hide": "הסתר",
     "viewAllAlerts": "צפה בכל ההתראות",
-    "noRecentActivity": "אין פעילות אחרונה"
+    "noRecentActivity": "אין פעילות אחרונה",
+    "noPlan": "ללא תוכנית",
+    "table": {
+      "company": "חברה",
+      "plan": "תוכנית",
+      "status": "סטטוס",
+      "joined": "הצטרפות"
+    },
+    "activity": {
+      "registered": "נרשמה"
+    },
+    "insights": {
+      "platformHealth": "בריאות הפלטפורמה",
+      "platformHealthDesc": "{{rate}}% מהחברות פעילות כעת. שמרו על מומנטום קליטה בריא.",
+      "aiBadge": "AI",
+      "pendingApprovals": "אישורים ממתינים",
+      "queueClear": "התור פנוי",
+      "pendingApprovalsDesc": "{{count}} חברות ממתינות לסקירה. טפלו בהן כדי לפתוח הפעלה.",
+      "queueClearDesc": "אין חברות ממתינות בתור האישורים.",
+      "newCompanyGrowth": "צמיחת חברות חדשות",
+      "growthInsufficientData": "אין מספיק נתונים חודשיים לחישוב צמיחה.",
+      "growthChanged": "רישומים חדשים השתנו ב־{{rate}}% מחודש לחודש."
+    }
   },
   "companies": {
     "title": "חברות",
@@ -72,7 +99,18 @@
     "joined": "הצטרף",
     "email": "אימייל",
     "phone": "טלפון",
-    "plan": "תוכנית"
+    "plan": "תוכנית",
+    "contact": "יצירת קשר",
+    "company": "חברה",
+    "status": "סטטוס",
+    "actions": "פעולות",
+    "view": "צפה",
+    "moreActions": "עוד פעולות",
+    "setActive": "הגדר כפעילה",
+    "setInactive": "הגדר כלא פעילה",
+    "failedToLoad": "טעינת החברות נכשלה",
+    "statusUpdated": "הסטטוס עודכן ל־{{status}}",
+    "failedToUpdateStatus": "עדכון הסטטוס נכשל"
   },
   "companyDetails": {
     "back": "חזרה",
@@ -92,7 +130,50 @@
     "documents": "מסמכים",
     "complianceFiles": "קבצי תאימות",
     "noDocuments": "אין מסמכים שהועלו.",
-    "uploaded": "הועלה"
+    "uploaded": "הועלה",
+    "backToCompanies": "חזרה לחברות",
+    "notFound": "החברה לא נמצאה",
+    "failedToLoad": "טעינת החברה נכשלה",
+    "notePlaceholder": "הוסף הערה פנימית על החברה...",
+    "addNote": "הוסף הערה",
+    "deleteNote": "מחק הערה",
+    "noNotesYet": "אין הערות פנימיות עדיין. הוסף את ההערה הראשונה למעלה.",
+    "noteAdded": "ההערה נוספה בהצלחה",
+    "noteDeleted": "ההערה נמחקה",
+    "registrationDate": "תאריך רישום",
+    "currentPlan": "תוכנית נוכחית",
+    "noPlan": "ללא תוכנית",
+    "activity": "פעילות",
+    "accountAge": "גיל החשבון",
+    "sinceRegistration": "מאז הרישום",
+    "recordedTransactions": "עסקאות שנרשמו",
+    "lifetimeBilled": "חיוב מצטבר",
+    "quickActions": "פעולות מהירות",
+    "viewDocuments": "צפה במסמכים",
+    "editCompany": "ערוך חברה",
+    "additionalInfo": "מידע נוסף",
+    "companyId": "מזהה חברה",
+    "performanceOverview": "סקירת ביצועים",
+    "noPaymentData": "אין עדיין נתוני תשלום",
+    "totalPayments": "סה\"כ תשלומים",
+    "averagePayment": "תשלום ממוצע",
+    "loadingPayments": "טוען תשלומים...",
+    "recurring": "חוזר",
+    "oneTime": "חד־פעמי",
+    "noPaymentHistory": "אין היסטוריית תשלומים",
+    "daysActive": "ימים פעילים",
+    "lastPayment": "תשלום אחרון",
+    "never": "אף פעם",
+    "revenueTrend": "מגמת הכנסות",
+    "noUsageData": "אין עדיין נתוני שימוש",
+    "failedToLoadPayments": "טעינת היסטוריית התשלומים נכשלה",
+    "tabs": {
+      "overview": "סקירה",
+      "performance": "ביצועים",
+      "paymentHistory": "היסטוריית תשלומים",
+      "usageAnalytics": "ניתוח שימוש",
+      "notes": "הערות פנימיות"
+    }
   },
   "pending": {
     "title": "אישורים",
@@ -103,7 +184,12 @@
     "reject": "דחה",
     "requested": "נדרש",
     "allClear": "הכל נקי",
-    "noPending": "אין אישורים ממתינים"
+    "noPending": "אין אישורים ממתינים",
+    "pendingReview": "ממתין לסקירה",
+    "approved": "{{name}} אושרה",
+    "rejected": "{{name}} נדחתה",
+    "failedToLoad": "הטעינה נכשלה",
+    "failed": "נכשל"
   },
   "users": {
     "title": "בקרת אדמין",
@@ -130,7 +216,27 @@
     "update": "עדכן",
     "create": "צור",
     "saving": "שומר...",
-    "deleteConfirm": "למחוק את המנהל הזה?"
+    "deleteConfirm": "למחוק את המנהל הזה?",
+    "pageTitle": "משתמשים",
+    "pageSubtitle": "ניהול משתמשי אדמין והרשאות",
+    "addUser": "הוסף משתמש",
+    "searchUsers": "חפש משתמשים...",
+    "editUser": "ערוך משתמש",
+    "add": "הוסף",
+    "deleteUserConfirm": "האם אתה בטוח שברצונך למחוק משתמש זה?",
+    "fillRequired": "נא למלא את כל השדות הנדרשים",
+    "created": "נוצר {{date}}",
+    "addedSuccess": "המשתמש נוסף בהצלחה",
+    "updatedSuccess": "המשתמש עודכן בהצלחה",
+    "deletedSuccess": "המשתמש נמחק בהצלחה",
+    "failedToAdd": "הוספת המשתמש נכשלה",
+    "failedToUpdate": "עדכון המשתמש נכשל",
+    "failedToDelete": "מחיקת המשתמש נכשלה",
+    "roles": {
+      "admin": "אדמין",
+      "superAdmin": "סופר אדמין",
+      "manager": "מנהל"
+    }
   },
   "activity": {
     "title": "יומן פעילות",
@@ -151,7 +257,28 @@
     "days7": "7 ימים",
     "days30": "30 ימים",
     "days90": "90 ימים",
-    "allTime": "כל הזמן"
+    "allTime": "כל הזמן",
+    "pageSubtitle": "מעקב אחר כל פעילויות המערכת",
+    "searchPlaceholder": "חפש פעילויות...",
+    "emptyTitle": "אין פעילות",
+    "tryAdjustFilters": "נסה לשנות את הסינונים",
+    "willAppear": "פעילות תופיע כאן",
+    "failedToLoad": "טעינת יומן הפעילות נכשלה",
+    "allTypes": "כל הסוגים",
+    "filters": {
+      "registrations": "רישומים",
+      "updates": "עדכונים",
+      "statusChanges": "שינויי סטטוס"
+    },
+    "actions": {
+      "registered": "חברה נרשמה",
+      "updated": "חברה עודכנה",
+      "statusChanged": "סטטוס: {{status}}"
+    },
+    "actors": {
+      "system": "מערכת",
+      "admin": "אדמין"
+    }
   },
   "subscriptions": {
     "title": "בקרת מנויים",
@@ -172,7 +299,28 @@
     "selectCompany": "בחר חברה לניהול.",
     "duration": "משך",
     "applyChanges": "החל שינויים",
-    "updating": "מעדכן..."
+    "updating": "מעדכן...",
+    "pageTitle": "מנויים",
+    "pageSubtitle": "ניהול מנויי חברות",
+    "companyLabel": "חברה:",
+    "selectPlan": "בחר תוכנית",
+    "currentPlan": "תוכנית נוכחית",
+    "noPlan": "ללא תוכנית",
+    "manage": "נהל",
+    "viewDetails": "צפה בפרטים",
+    "empty": "אין מנויים",
+    "tryAdjustFilters": "נסה לשנות את הסינונים",
+    "willAppear": "מנויים יופיעו כאן",
+    "updatedSuccess": "המנוי עודכן בהצלחה",
+    "failedToLoad": "טעינת החברות נכשלה",
+    "failedToUpdate": "עדכון המנוי נכשל",
+    "allPlans": "כל התוכניות",
+    "plans": {
+      "basic": "בסיסי",
+      "professional": "מקצועי",
+      "enterprise": "ארגוני",
+      "premium": "פרימיום"
+    }
   },
   "common": {
     "loading": "טוען...",
@@ -183,7 +331,15 @@
     "delete": "מחק",
     "edit": "ערוך",
     "close": "סגור",
-    "type": "סוג"
+    "type": "סוג",
+    "somethingWentWrong": "משהו השתבש",
+    "tryAgain": "נסה שוב",
+    "databaseUnavailable": "מסד הנתונים אינו זמין",
+    "view": "צפה",
+    "actions": "פעולות",
+    "status": "סטטוס",
+    "company": "חברה",
+    "contact": "יצירת קשר"
   },
   "login": {
     "title": "התחברות",
@@ -626,7 +782,8 @@
     "optional": "(אופציונלי)",
     "cancel": "ביטול",
     "creating": "יוצר...",
-    "createSubscriptionInvoice": "צור חשבונית מנוי"
+    "createSubscriptionInvoice": "צור חשבונית מנוי",
+    "duePrefix": "לתשלום עד:"
   },
   "communication": {
     "title": "מרכז תקשורת",
@@ -714,5 +871,17 @@
     "title": "אין הרשאה",
     "description": "אין לך הרשאה לצפות בעמוד זה.",
     "signIn": "עבור להתחברות"
+  },
+  "register": {
+    "title": "יצירת חשבון",
+    "subtitle": "הצטרף ל־Nexora היום",
+    "name": "שם",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "creating": "יוצר...",
+    "createAccount": "צור חשבון",
+    "failed": "ההרשמה נכשלה",
+    "haveAccount": "כבר יש לך חשבון?",
+    "signIn": "התחבר"
   }
 }

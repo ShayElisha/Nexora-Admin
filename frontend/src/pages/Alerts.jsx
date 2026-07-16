@@ -13,6 +13,10 @@ import {
 import { useToast } from "../components/Toaster.jsx";
 import { format } from "date-fns";
 import EmptyState from "../components/ui/EmptyState.jsx";
+import PageShell from "../components/ui/PageShell.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
+import Toolbar from "../components/ui/Toolbar.jsx";
+import ErrorPanel from "../components/ui/ErrorPanel.jsx";
 import {
   Bell,
   Search,
@@ -243,187 +247,135 @@ export default function Alerts() {
 
   if (loading && !alerts.length) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--primary)]" />
-            <p className="text-[var(--text-muted)]">{t("alerts.loading")}</p>
-          </div>
+      <PageShell>
+        <div className="flex flex-col items-center justify-center py-28">
+          <RefreshCw className="w-8 h-8 animate-spin mb-4 text-[var(--primary)]" />
+          <p className="text-[var(--text-muted)]">{t("alerts.loading")}</p>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-light tracking-wider uppercase text-[var(--text-secondary)] flex items-center gap-3">
-            <Bell className="w-6 h-6" />
-            {t("alerts.title")}
-          </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            {t("alerts.subtitle")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleRunChecks}
-            disabled={runningChecks}
-            className="px-4 py-2 text-xs uppercase tracking-wider border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-50"
-          >
-            {runningChecks ? (
-              <>
-                <RefreshCw className="w-4 h-4 inline-block animate-spin mr-2" />
-                {t("alerts.running")}
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4 inline-block mr-2" />
-                {t("alerts.runChecks")}
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleMarkAllAsRead}
-            className="px-4 py-2 text-xs uppercase tracking-wider border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:border-[var(--text-secondary)] transition-colors"
-          >
-            <CheckCircle className="w-4 h-4 inline-block mr-2" />
-            {t("alerts.markAllRead")}
-          </button>
-        </div>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={t("alerts.title")}
+        subtitle={t("alerts.subtitle")}
+        icon={<Bell className="w-5 h-5" />}
+        actions={
+          <>
+            <button
+              onClick={handleRunChecks}
+              disabled={runningChecks}
+              className="btn btn-secondary btn-compact flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${runningChecks ? "animate-spin" : ""}`} />
+              {runningChecks ? t("alerts.running") : t("alerts.runChecks")}
+            </button>
+            <button
+              onClick={handleMarkAllAsRead}
+              className="btn btn-secondary btn-compact flex items-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" />
+              {t("alerts.markAllRead")}
+            </button>
+          </>
+        }
+      />
 
-      {/* Statistics */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <div className="p-4 border border-[var(--border)] bg-[var(--bg)]">
-            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">
-              {t("alerts.total")}
-            </p>
-            <p className="text-2xl font-light text-[var(--text-secondary)]">
-              {stats.total || 0}
-            </p>
+        <div className="kpi-grid">
+          <div className="kpi-card kpi-card-slate">
+            <p className="kpi-label">{t("alerts.total")}</p>
+            <p className="kpi-value">{stats.total || 0}</p>
           </div>
-          <div className="p-4 border border-blue-300 bg-blue-50">
-            <p className="text-xs text-blue-700 uppercase tracking-wider mb-1">
-              {t("alerts.unread")}
-            </p>
-            <p className="text-2xl font-light text-blue-700">
-              {stats.unread || 0}
-            </p>
+          <div className="kpi-card kpi-card-blue">
+            <p className="kpi-label">{t("alerts.unread")}</p>
+            <p className="kpi-value">{stats.unread || 0}</p>
           </div>
-          <div className="p-4 border border-gray-300 bg-gray-50">
-            <p className="text-xs text-gray-700 uppercase tracking-wider mb-1">
-              {t("alerts.read")}
-            </p>
-            <p className="text-2xl font-light text-gray-700">
-              {stats.read || 0}
-            </p>
+          <div className="kpi-card kpi-card-slate">
+            <p className="kpi-label">{t("alerts.read")}</p>
+            <p className="kpi-value">{stats.read || 0}</p>
           </div>
-          <div className="p-4 border border-green-300 bg-green-50">
-            <p className="text-xs text-green-700 uppercase tracking-wider mb-1">
-              {t("alerts.resolved")}
-            </p>
-            <p className="text-2xl font-light text-green-700">
-              {stats.resolved || 0}
-            </p>
+          <div className="kpi-card kpi-card-green">
+            <p className="kpi-label">{t("alerts.resolved")}</p>
+            <p className="kpi-value">{stats.resolved || 0}</p>
           </div>
-          <div className="p-4 border border-red-300 bg-red-50">
-            <p className="text-xs text-red-700 uppercase tracking-wider mb-1">
-              {t("alerts.critical")}
-            </p>
-            <p className="text-2xl font-light text-red-700">
-              {stats.critical || 0}
-            </p>
+          <div className="kpi-card kpi-card-rose">
+            <p className="kpi-label">{t("alerts.critical")}</p>
+            <p className="kpi-value">{stats.critical || 0}</p>
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="mb-6 p-4 border border-[var(--border)] bg-[var(--bg)]">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-[var(--text-muted)]" />
-            <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
-              {t("alerts.filters")}:
-            </span>
-          </div>
-
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                type="text"
-                placeholder={t("alerts.searchPlaceholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)]"
-              />
-            </div>
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-4 py-2 text-xs border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)]"
-          >
-            <option value="all">{t("alerts.allStatus")}</option>
-            <option value="unread">{t("alerts.unread")}</option>
-            <option value="read">{t("alerts.read")}</option>
-            <option value="resolved">{t("alerts.resolved")}</option>
-          </select>
-
-          {/* Type Filter */}
-          <select
-            value={filterType}
-            onChange={(e) => {
-              setFilterType(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-4 py-2 text-xs border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)]"
-          >
-            <option value="all">{t("alerts.allTypes")}</option>
-            <option value="company_pending">{t("alerts.type.companyPending")}</option>
-            <option value="payment_issue">{t("alerts.type.paymentIssue")}</option>
-            <option value="payment_failed">{t("alerts.type.paymentFailed")}</option>
-            <option value="subscription_expiring">{t("alerts.type.subscriptionExpiring")}</option>
-            <option value="subscription_expired">{t("alerts.type.subscriptionExpired")}</option>
-            <option value="at_risk_company">{t("alerts.type.atRiskCompany")}</option>
-            <option value="high_priority_ticket">{t("alerts.type.highPriorityTicket")}</option>
-            <option value="system_error">{t("alerts.type.systemError")}</option>
-          </select>
-
-          {/* Priority Filter */}
-          <select
-            value={filterPriority}
-            onChange={(e) => {
-              setFilterPriority(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-4 py-2 text-xs border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)]"
-          >
-            <option value="all">{t("alerts.allPriorities")}</option>
-            <option value="critical">{t("alerts.priority.critical")}</option>
-            <option value="high">{t("alerts.priority.high")}</option>
-            <option value="medium">{t("alerts.priority.medium")}</option>
-            <option value="low">{t("alerts.priority.low")}</option>
-          </select>
+      <Toolbar>
+        <div className="flex items-center gap-2 shrink-0 text-[var(--text-muted)]">
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-medium">{t("alerts.filters")}</span>
         </div>
-      </div>
 
-      {/* Alerts List */}
+        <div className="relative flex-1 min-w-[12rem] max-w-sm">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+          <input
+            type="text"
+            placeholder={t("alerts.searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input ps-9"
+          />
+        </div>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => {
+            setFilterStatus(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="input !w-auto shrink-0"
+        >
+          <option value="all">{t("alerts.allStatus")}</option>
+          <option value="unread">{t("alerts.unread")}</option>
+          <option value="read">{t("alerts.read")}</option>
+          <option value="resolved">{t("alerts.resolved")}</option>
+        </select>
+
+        <select
+          value={filterType}
+          onChange={(e) => {
+            setFilterType(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="input !w-auto shrink-0"
+        >
+          <option value="all">{t("alerts.allTypes")}</option>
+          <option value="company_pending">{t("alerts.type.companyPending")}</option>
+          <option value="payment_issue">{t("alerts.type.paymentIssue")}</option>
+          <option value="payment_failed">{t("alerts.type.paymentFailed")}</option>
+          <option value="subscription_expiring">{t("alerts.type.subscriptionExpiring")}</option>
+          <option value="subscription_expired">{t("alerts.type.subscriptionExpired")}</option>
+          <option value="at_risk_company">{t("alerts.type.atRiskCompany")}</option>
+          <option value="high_priority_ticket">{t("alerts.type.highPriorityTicket")}</option>
+          <option value="system_error">{t("alerts.type.systemError")}</option>
+        </select>
+
+        <select
+          value={filterPriority}
+          onChange={(e) => {
+            setFilterPriority(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="input !w-auto shrink-0"
+        >
+          <option value="all">{t("alerts.allPriorities")}</option>
+          <option value="critical">{t("alerts.priority.critical")}</option>
+          <option value="high">{t("alerts.priority.high")}</option>
+          <option value="medium">{t("alerts.priority.medium")}</option>
+          <option value="low">{t("alerts.priority.low")}</option>
+        </select>
+      </Toolbar>
+
       {error ? (
-        <div className="text-center py-12">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-          <p className="text-red-500">{error}</p>
-        </div>
+        <ErrorPanel message={error} />
       ) : filteredAlerts.length === 0 ? (
         <div className="card card-elevated">
           <EmptyState
@@ -433,19 +385,16 @@ export default function Alerts() {
           />
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="list-stack">
           {filteredAlerts.map((alert) => {
             const isExpanded = expandedAlerts.has(alert._id);
             return (
               <div
                 key={alert._id}
-                className={`border ${
-                  alert.status === "unread"
-                    ? "border-[var(--primary)] bg-[var(--primary)]/5"
-                    : "border-[var(--border)] bg-[var(--bg)]"
-                } transition-all hover:shadow-md`}
+                className={`list-item ${
+                  alert.status === "unread" ? "ring-1 ring-[var(--primary)]/25 bg-[var(--primary)]/[0.04]" : ""
+                }`}
               >
-                <div className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
@@ -630,13 +579,12 @@ export default function Alerts() {
                       </button>
                     </div>
                   </div>
-                </div>
               </div>
             );
           })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
 

@@ -25,6 +25,9 @@ import {
 import MetricCard from "../components/ui/MetricCard.jsx";
 import StatusBadge from "../components/ui/StatusBadge.jsx";
 import InsightCard from "../components/ui/InsightCard.jsx";
+import PageShell from "../components/ui/PageShell.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
+import { LayoutDashboard } from "lucide-react";
 import SectionCard from "../components/ui/SectionCard.jsx";
 
 const CHART_COLORS = ["#2563eb", "#10b981", "#f97316", "#f59e0b", "#64748b"];
@@ -141,7 +144,7 @@ export default function Dashboard() {
 
         const planCounts = {};
         companies.forEach((company) => {
-          const plan = company.subscription?.plan || "No Plan";
+          const plan = company.subscription?.plan || t("dashboard.noPlan");
           planCounts[plan] = (planCounts[plan] || 0) + 1;
         });
         setPlanDistribution(
@@ -155,7 +158,7 @@ export default function Dashboard() {
             .map((c) => ({
               id: c._id,
               name: c.name,
-              action: "Registered",
+              action: t("dashboard.activity.registered"),
               date: c.createdAt,
               status: c.status,
               plan: c.subscription?.plan || "—",
@@ -213,48 +216,54 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
-        <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }} />
-      </div>
+      <PageShell>
+        <div className="flex items-center justify-center py-28">
+          <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }} />
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="container max-w-7xl mx-auto space-y-10">
-        <header className="animate-in">
-          <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[var(--text-primary)] mb-3">
-            {t("dashboard.title")}
-          </h1>
-          <p className="text-base md:text-lg text-[var(--text-secondary)]">
-            {t("dashboard.subtitle")}
-          </p>
-        </header>
+    <PageShell dir={isRTL ? "rtl" : "ltr"}>
+        <PageHeader
+          title={t("dashboard.title")}
+          subtitle={t("dashboard.subtitle")}
+          icon={<LayoutDashboard className="w-5 h-5" />}
+        />
 
         {visibleWidgets.insights && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-in">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <InsightCard
               tone="primary"
-              title="Platform health"
-              description={`${activeRate.toFixed(0)}% of companies are currently active. Keep onboarding momentum healthy.`}
-              icon={<span>AI</span>}
+              title={t("dashboard.insights.platformHealth")}
+              description={t("dashboard.insights.platformHealthDesc", {
+                rate: activeRate.toFixed(0),
+              })}
+              icon={<span>{t("dashboard.insights.aiBadge")}</span>}
             />
             <InsightCard
               tone={stats.pending > 0 ? "warning" : "success"}
-              title={stats.pending > 0 ? "Pending approvals" : "Queue is clear"}
+              title={
+                stats.pending > 0
+                  ? t("dashboard.insights.pendingApprovals")
+                  : t("dashboard.insights.queueClear")
+              }
               description={
                 stats.pending > 0
-                  ? `${stats.pending} companies await review. Resolve these to unlock activation.`
-                  : "No pending companies in the approval queue."
+                  ? t("dashboard.insights.pendingApprovalsDesc", { count: stats.pending })
+                  : t("dashboard.insights.queueClearDesc")
               }
             />
             <InsightCard
               tone={growthTrend != null && growthTrend < 0 ? "orange" : "success"}
-              title="New company growth"
+              title={t("dashboard.insights.newCompanyGrowth")}
               description={
                 growthTrend == null
-                  ? "Not enough monthly data to calculate growth yet."
-                  : `Month-over-month new registrations changed by ${growthTrend.toFixed(1)}%.`
+                  ? t("dashboard.insights.growthInsufficientData")
+                  : t("dashboard.insights.growthChanged", {
+                      rate: growthTrend.toFixed(1),
+                    })
               }
             />
           </div>
@@ -490,10 +499,10 @@ export default function Dashboard() {
                 <table className="data-table min-w-full">
                   <thead>
                     <tr>
-                      <th>Company</th>
-                      <th>Plan</th>
-                      <th>Status</th>
-                      <th>Joined</th>
+                      <th>{t("dashboard.table.company")}</th>
+                      <th>{t("dashboard.table.plan")}</th>
+                      <th>{t("dashboard.table.status")}</th>
+                      <th>{t("dashboard.table.joined")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -542,7 +551,6 @@ export default function Dashboard() {
             )}
           </SectionCard>
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 }

@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle.jsx";
 import LanguageToggle from "./LanguageToggle.jsx";
-import { Bell } from "lucide-react";
+import { Bell, ChevronDown, LogOut } from "lucide-react";
 import { fetchAlerts, fetchAlertStats, markAlertAsRead } from "../api/api";
 import { formatDateTime } from "../utils/formatDate.js";
 
@@ -15,15 +15,8 @@ const parseUser = () => {
   }
 };
 
-const PRIMARY_PATHS = new Set([
-  "/dashboard",
-  "/analytics",
-  "/companies",
-  "/pending-companies",
-  "/invoices",
-  "/support-tickets",
-  "/alerts",
-]);
+/** Keep the top bar short — everything else goes into More. */
+const PRIMARY_PATHS = ["/dashboard", "/companies", "/invoices", "/support-tickets"];
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -36,7 +29,7 @@ export default function Navbar() {
   const moreRef = useRef(null);
   const storedUser = useMemo(() => parseUser(), []);
   const isAuthenticated = Boolean(storedUser);
-  const userName = storedUser?.name || "User";
+  const userName = storedUser?.name || t("nav.userFallback");
   const permissions = storedUser?.permissions || {};
 
   useEffect(() => {
@@ -84,283 +77,276 @@ export default function Navbar() {
         console.error("Failed to mark alert as read:", error);
       }
     }
-    if (alert.actionUrl) {
-      window.location.href = alert.actionUrl;
-    }
+    if (alert.actionUrl) window.location.href = alert.actionUrl;
     setAlertsOpen(false);
   };
 
-  const links = useMemo(() => {
+  const allLinks = useMemo(() => {
     const items = [
-      { to: "/dashboard", label: t("nav.dashboard") },
-      { to: "/analytics", label: t("nav.analytics") },
-      { to: "/companies", label: t("nav.companies") },
-      { to: "/pending-companies", label: t("nav.pending") },
-      { to: "/subscriptions", label: t("nav.subscriptions") },
-      { to: "/payments", label: t("nav.payments") },
-      { to: "/reports", label: t("nav.reports") },
-      { to: "/activity", label: t("nav.activity") },
-      { to: "/support-tickets", label: t("nav.supportTickets") },
-      { to: "/alerts", label: t("nav.alerts") },
-      { to: "/invoices", label: t("nav.invoices") },
-      { to: "/communication", label: t("nav.communication") },
+      { to: "/dashboard", label: t("nav.dashboard"), group: "main" },
+      { to: "/analytics", label: t("nav.analytics"), group: "insights" },
+      { to: "/companies", label: t("nav.companies"), group: "main" },
+      { to: "/pending-companies", label: t("nav.pending"), group: "ops" },
+      { to: "/subscriptions", label: t("nav.subscriptions"), group: "ops" },
+      { to: "/payments", label: t("nav.payments"), group: "ops" },
+      { to: "/reports", label: t("nav.reports"), group: "insights" },
+      { to: "/activity", label: t("nav.activity"), group: "insights" },
+      { to: "/support-tickets", label: t("nav.supportTickets"), group: "main" },
+      { to: "/alerts", label: t("nav.alerts"), group: "ops" },
+      { to: "/invoices", label: t("nav.invoices"), group: "main" },
+      { to: "/communication", label: t("nav.communication"), group: "ops" },
     ];
     if (permissions.users !== false) {
-      items.push({ to: "/users", label: t("nav.users") });
-      items.push({ to: "/user-activity", label: t("nav.userActivity") });
-      items.push({ to: "/sessions", label: t("nav.sessions") });
+      items.push(
+        { to: "/users", label: t("nav.users"), group: "admin" },
+        { to: "/user-activity", label: t("nav.userActivity"), group: "admin" },
+        { to: "/sessions", label: t("nav.sessions"), group: "admin" }
+      );
     }
-    items.push({ to: "/settings", label: t("nav.settings") });
+    items.push({ to: "/settings", label: t("nav.settings"), group: "admin" });
     return items;
   }, [permissions.users, t]);
 
-  const primaryLinks = links.filter((l) => PRIMARY_PATHS.has(l.to));
-  const moreLinks = links.filter((l) => !PRIMARY_PATHS.has(l.to));
+  const primaryLinks = allLinks.filter((l) => PRIMARY_PATHS.includes(l.to));
+  const moreLinks = allLinks.filter((l) => !PRIMARY_PATHS.includes(l.to));
   const moreActive = moreLinks.some((l) => location.pathname.startsWith(l.to));
+
+  const moreGroups = useMemo(() => {
+    const labels = {
+      insights: t("nav.groupInsights", { defaultValue: "Insights" }),
+      ops: t("nav.groupOps", { defaultValue: "Operations" }),
+      admin: t("nav.groupAdmin", { defaultValue: "Admin" }),
+    };
+    const order = ["insights", "ops", "admin"];
+    return order
+      .map((key) => ({
+        key,
+        label: labels[key],
+        items: moreLinks.filter((l) => l.group === key),
+      }))
+      .filter((g) => g.items.length > 0);
+  }, [moreLinks, t]);
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
     window.location.href = "/";
   };
 
-  const linkClass = (isActive) =>
-    `relative text-xs font-medium tracking-wide whitespace-nowrap transition-colors pb-1 ${
-      isActive
-        ? "text-[var(--text-primary)] after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-[var(--primary)]"
-        : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-    }`;
-
   return (
-    <header className="sticky top-0 z-50 bg-[var(--bg-elevated)]/90 backdrop-blur-md border-b border-[var(--border)]">
-      <nav className="container max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4 h-14">
-          <NavLink
-            to={isAuthenticated ? "/dashboard" : "/"}
-            className="shrink-0 text-sm font-semibold tracking-[0.18em] uppercase text-[var(--text-primary)]"
-          >
-            Nexora
-          </NavLink>
+    <header className="top-nav">
+      <nav className="top-nav-inner">
+        <NavLink to={isAuthenticated ? "/dashboard" : "/"} className="brand-mark shrink-0">
+          <span className="brand-mark-dot" aria-hidden />
+          <span className="brand-mark-text">Nexora</span>
+        </NavLink>
 
-          {isAuthenticated && (
-            <div className="hidden lg:flex items-center gap-4 min-w-0 flex-1 justify-center px-2">
-              {primaryLinks.map((link) => (
-                <NavLink key={link.to} to={link.to} className={({ isActive }) => linkClass(isActive)}>
-                  {link.label}
-                </NavLink>
-              ))}
+        {isAuthenticated && (
+          <div className="hidden lg:flex items-center gap-2 flex-1 justify-center px-4">
+            {primaryLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) => `nav-link ${isActive ? "is-active" : ""}`}
+              >
+                {link.label}
+              </NavLink>
+            ))}
 
-              {moreLinks.length > 0 && (
-                <div className="relative" ref={moreRef}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMoreOpen((v) => !v);
-                    }}
-                    className={linkClass(moreActive)}
-                  >
-                    {t("nav.more", { defaultValue: "More" })} ▾
-                  </button>
-                  {moreOpen && (
-                    <div className="absolute start-0 top-full mt-3 w-52 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-lg py-2 z-50">
-                      {moreLinks.map((link) => (
-                        <NavLink
-                          key={link.to}
-                          to={link.to}
-                          onClick={() => setMoreOpen(false)}
-                          className={({ isActive }) =>
-                            `block px-4 py-2 text-sm transition-colors ${
-                              isActive
-                                ? "bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium"
-                                : "text-[var(--text-secondary)] hover:bg-[var(--gray-50)]"
-                            }`
-                          }
-                        >
-                          {link.label}
-                        </NavLink>
-                      ))}
-                    </div>
-                  )}
+            <div className="relative" ref={moreRef}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMoreOpen((v) => !v);
+                }}
+                className={`nav-link inline-flex items-center gap-1.5 ${moreActive || moreOpen ? "is-active" : ""}`}
+                aria-expanded={moreOpen}
+              >
+                {t("nav.more")}
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {moreOpen && (
+                <div className="more-panel" role="menu">
+                  <div className="more-panel-grid">
+                    {moreGroups.map((group) => (
+                      <div key={group.key} className="more-panel-col">
+                        <p className="more-panel-heading">{group.label}</p>
+                        <ul className="more-panel-list">
+                          {group.items.map((link) => (
+                            <li key={link.to}>
+                              <NavLink
+                                to={link.to}
+                                role="menuitem"
+                                onClick={() => setMoreOpen(false)}
+                                className={({ isActive }) =>
+                                  `more-panel-item ${isActive ? "is-active" : ""}`
+                                }
+                              >
+                                {link.label}
+                              </NavLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="hidden md:flex items-center gap-3 shrink-0">
-            {!isAuthenticated ? (
-              <>
-                <LanguageToggle />
-                <NavLink
-                  to="/"
-                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+        <div className="hidden md:flex items-center gap-1.5 shrink-0">
+          {!isAuthenticated ? (
+            <>
+              <LanguageToggle />
+              <NavLink to="/" className="nav-link">
+                {t("nav.signIn")}
+              </NavLink>
+              <NavLink to="/register" className="btn btn-primary btn-compact text-xs ms-1">
+                {t("nav.register")}
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <LanguageToggle />
+              <ThemeToggle />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAlertsOpen(!alertsOpen)}
+                  className="nav-icon-btn"
+                  aria-label={t("nav.alerts")}
                 >
-                  {t("nav.signIn")}
-                </NavLink>
-                <NavLink
-                  to="/register"
-                  className="text-xs font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors"
-                >
-                  {t("nav.register")}
-                </NavLink>
-              </>
-            ) : (
-              <>
-                <LanguageToggle />
-                <ThemeToggle />
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setAlertsOpen(!alertsOpen)}
-                    className="relative p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--gray-50)] transition-colors"
-                    aria-label={t("nav.alerts")}
-                  >
-                    <Bell className="w-4 h-4" />
-                    {alertStats?.unread > 0 && (
-                      <span className="absolute top-1 end-1 min-w-4 h-4 px-1 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center">
-                        {alertStats.unread > 9 ? "9+" : alertStats.unread}
-                      </span>
-                    )}
-                  </button>
-                  {alertsOpen && (
-                    <div className="absolute end-0 mt-2 w-80 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
-                      <div className="p-4 border-b border-[var(--border)] flex justify-between items-center">
-                        <h3 className="text-xs uppercase tracking-wider text-[var(--text-secondary)]">
-                          {t("nav.alerts")}
-                        </h3>
-                        <NavLink
-                          to="/alerts"
-                          onClick={() => setAlertsOpen(false)}
-                          className="text-xs text-[var(--primary)] hover:text-[var(--primary-dark)]"
-                        >
-                          {t("nav.viewAll")}
-                        </NavLink>
-                      </div>
-                      {alerts.length === 0 ? (
-                        <div className="p-6 text-center text-xs text-[var(--text-muted)]">
-                          {t("nav.noAlerts")}
-                        </div>
-                      ) : (
-                        <div className="divide-y divide-[var(--border)]">
-                          {alerts.map((alert) => (
-                            <button
-                              key={alert._id}
-                              type="button"
-                              onClick={() => handleAlertClick(alert)}
-                              className="w-full p-4 text-start hover:bg-[var(--gray-50)] transition-colors"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-[var(--text-primary)] mb-1">
-                                    {alert.title}
-                                  </p>
-                                  <p className="text-xs text-[var(--text-muted)] line-clamp-2">
-                                    {alert.message}
-                                  </p>
-                                  <p className="text-[10px] text-[var(--text-muted)] mt-2">
-                                    {formatDateTime(alert.createdAt)}
-                                  </p>
-                                </div>
-                                {alert.status === "unread" && (
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 shrink-0" />
-                                )}
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  <Bell className="w-4 h-4" />
+                  {alertStats?.unread > 0 && (
+                    <span className="nav-badge">
+                      {alertStats.unread > 9 ? "9+" : alertStats.unread}
+                    </span>
                   )}
-                </div>
-                <span className="text-xs text-[var(--text-muted)] max-w-[8rem] truncate">
+                </button>
+                {alertsOpen && (
+                  <div className="alerts-panel">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                        {t("nav.alerts")}
+                      </h3>
+                      <NavLink
+                        to="/alerts"
+                        onClick={() => setAlertsOpen(false)}
+                        className="text-xs font-semibold text-[var(--primary)]"
+                      >
+                        {t("nav.viewAll")}
+                      </NavLink>
+                    </div>
+                    {alerts.length === 0 ? (
+                      <div className="p-8 text-center text-sm text-[var(--text-muted)]">
+                        {t("nav.noAlerts")}
+                      </div>
+                    ) : (
+                      <div className="py-1 max-h-72 overflow-y-auto">
+                        {alerts.map((alert) => (
+                          <button
+                            key={alert._id}
+                            type="button"
+                            onClick={() => handleAlertClick(alert)}
+                            className="w-full px-4 py-3 text-start hover:bg-[rgba(15,118,110,0.06)] transition-colors"
+                          >
+                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">
+                              {alert.title}
+                            </p>
+                            <p className="text-xs text-[var(--text-muted)] line-clamp-2">
+                              {alert.message}
+                            </p>
+                            <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
+                              {formatDateTime(alert.createdAt)}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="nav-user-chip" title={userName}>
+                <span className="nav-avatar">{userName.charAt(0).toUpperCase()}</span>
+                <span className="hidden xl:inline text-xs font-medium text-[var(--text-secondary)] max-w-[6.5rem] truncate">
                   {userName}
                 </span>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-                >
-                  {t("nav.signOut")}
-                </button>
-              </>
-            )}
-          </div>
+              </div>
 
-          <button
-            type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="lg:hidden p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--gray-50)] transition-colors"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {menuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="nav-icon-btn"
+                title={t("nav.signOut")}
+                aria-label={t("nav.signOut")}
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className="lg:hidden nav-icon-btn"
+          aria-label={t("nav.toggleMenu")}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {menuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
       </nav>
 
-      {alertsOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setAlertsOpen(false)} />
-      )}
+      {alertsOpen && <div className="fixed inset-0 z-40" onClick={() => setAlertsOpen(false)} />}
 
       {menuOpen && (
-        <div className="lg:hidden border-t border-[var(--border)] bg-[var(--bg-elevated)]">
-          <div className="container max-w-7xl mx-auto py-4 space-y-1">
-            {!isAuthenticated ? (
-              <>
+        <div className="mobile-panel">
+          {!isAuthenticated ? (
+            <>
+              <NavLink to="/" onClick={() => setMenuOpen(false)} className="more-panel-item">
+                {t("nav.signIn")}
+              </NavLink>
+              <NavLink to="/register" onClick={() => setMenuOpen(false)} className="more-panel-item">
+                {t("nav.register")}
+              </NavLink>
+            </>
+          ) : (
+            <>
+              {allLinks.map((link) => (
                 <NavLink
-                  to="/"
+                  key={link.to}
+                  to={link.to}
                   onClick={() => setMenuOpen(false)}
-                  className="block px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--gray-50)]"
+                  className={({ isActive }) =>
+                    `more-panel-item ${isActive ? "is-active" : ""}`
+                  }
                 >
-                  {t("nav.signIn")}
+                  {link.label}
                 </NavLink>
-                <NavLink
-                  to="/register"
-                  onClick={() => setMenuOpen(false)}
-                  className="block px-3 py-2 rounded-lg text-sm text-[var(--primary)]"
-                >
-                  {t("nav.register")}
-                </NavLink>
-              </>
-            ) : (
-              <>
-                {links.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `block px-3 py-2 rounded-lg text-sm transition-colors ${
-                        isActive
-                          ? "bg-[var(--bg-tertiary)] text-[var(--text-primary)] font-medium"
-                          : "text-[var(--text-secondary)] hover:bg-[var(--gray-50)]"
-                      }`
-                    }
-                  >
-                    {link.label}
-                  </NavLink>
-                ))}
-                <div className="flex items-center justify-between pt-3 mt-2 border-t border-[var(--border)] px-3">
-                  <span className="text-xs text-[var(--text-muted)]">{userName}</span>
-                  <div className="flex items-center gap-2">
-                    <LanguageToggle />
-                    <ThemeToggle />
-                  </div>
+              ))}
+              <div className="flex items-center justify-between pt-3 mt-2 border-t border-[var(--border)] px-1">
+                <span className="text-xs text-[var(--text-muted)]">{userName}</span>
+                <div className="flex items-center gap-2">
+                  <LanguageToggle />
+                  <ThemeToggle />
+                  <button type="button" onClick={handleSignOut} className="nav-icon-btn">
+                    <LogOut className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="block w-full text-start px-3 py-2 rounded-lg text-sm text-[var(--text-muted)] hover:bg-[var(--gray-50)] mt-1"
-                >
-                  {t("nav.signOut")}
-                </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>

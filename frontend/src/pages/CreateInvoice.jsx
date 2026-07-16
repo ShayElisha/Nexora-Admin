@@ -170,7 +170,7 @@ const CreateInvoice = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-6 pb-16">
       <div className="container max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">

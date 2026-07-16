@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { fetchAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser } from "../api/api";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import { formatDateLong } from "../utils/formatDate.js";
+import PageShell from "../components/ui/PageShell.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
+import Toolbar from "../components/ui/Toolbar.jsx";
+import { Users } from "lucide-react";
 
 export default function UsersManagement() {
-  const { t: tEmpty } = useTranslation();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,9 +55,9 @@ export default function UsersManagement() {
       const newUser = await createAdminUser(userData);
       setUsers([...users, newUser]);
       setShowAddModal(false);
-      showNotification("User added successfully");
+      showNotification(t("users.addedSuccess"));
     } catch (e) {
-      showNotification(e?.message || "Failed to add user", "error");
+      showNotification(e?.message || t("users.failedToAdd"), "error");
     }
   };
 
@@ -64,22 +66,28 @@ export default function UsersManagement() {
       await updateAdminUser(id, userData);
       setUsers(users.map((u) => (u._id === id ? { ...u, ...userData } : u)));
       setEditingUser(null);
-      showNotification("User updated successfully");
+      showNotification(t("users.updatedSuccess"));
     } catch (e) {
-      showNotification(e?.message || "Failed to update user", "error");
+      showNotification(e?.message || t("users.failedToUpdate"), "error");
     }
   };
 
   const handleDeleteUser = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (!window.confirm(t("users.deleteUserConfirm"))) return;
 
     try {
       await deleteAdminUser(id);
       setUsers(users.filter((u) => u._id !== id));
-      showNotification("User deleted successfully");
+      showNotification(t("users.deletedSuccess"));
     } catch (e) {
-      showNotification(e?.message || "Failed to delete user", "error");
+      showNotification(e?.message || t("users.failedToDelete"), "error");
     }
+  };
+
+  const roleLabel = (role) => {
+    if (role === "Super Admin") return t("users.roles.superAdmin");
+    if (role === "Manager") return t("users.roles.manager");
+    return t("users.roles.admin");
   };
 
   const filtered = users.filter(
@@ -89,14 +97,13 @@ export default function UsersManagement() {
   );
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
-      {/* Toast */}
+    <PageShell>
       {notification && (
         <div
-          className={`fixed top-20 right-6 z-50 px-8 py-5 border shadow-lg animate-scale rounded-xl backdrop-blur-sm ${
+          className={`fixed top-24 end-6 z-50 px-6 py-4 border shadow-lg animate-scale rounded-2xl backdrop-blur-md ${
             notification.type === "success"
-              ? "bg-[var(--white)] border-[var(--gray-300)]"
-              : "bg-[var(--gray-900)] text-white border-[var(--gray-700)]"
+              ? "bg-[var(--bg-elevated)] border-[var(--border)]"
+              : "bg-rose-600 text-white border-rose-500"
           }`}
         >
           <div className="text-sm font-medium flex items-center gap-2">
@@ -114,121 +121,109 @@ export default function UsersManagement() {
         </div>
       )}
 
-      <div className="container">
-        {/* Header */}
-        <div className="mb-20 animate-in">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-6xl font-light mb-8 tracking-tight">Users</h1>
-              <p className="text-xl text-[var(--gray-500)] font-light">Manage admin users</p>
-            </div>
-            <button onClick={() => setShowAddModal(true)} className="btn btn-primary">
-              + Add User
+      <PageHeader
+        title={t("users.pageTitle")}
+        subtitle={t("users.pageSubtitle")}
+        icon={<Users className="w-5 h-5" />}
+        actions={
+          <button onClick={() => setShowAddModal(true)} className="btn btn-primary btn-compact">
+            + {t("users.addUser")}
+          </button>
+        }
+      />
+
+      <Toolbar>
+        <div className="relative flex-1 min-w-[12rem] max-w-md">
+          <input
+            type="text"
+            placeholder={t("users.searchUsers")}
+            className="input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute end-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
-          </div>
+          )}
         </div>
+      </Toolbar>
 
-        {/* Search */}
-        <div className="mb-12 animate-in" style={{ animationDelay: "0.1s" }}>
-          <div className="relative max-w-2xl">
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--gray-400)] hover:text-[var(--black)]"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-          </div>
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-28">
+          <div className="spinner mb-6" style={{ width: "40px", height: "40px", borderWidth: "2px" }} />
+          <p className="text-[var(--text-muted)]">{t("common.loading")}</p>
         </div>
+      )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-32">
-            <div className="spinner mb-6" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
-            <p className="text-[var(--gray-500)] font-light">Loading...</p>
-          </div>
-        )}
+      {error && (
+        <div className="card border border-[var(--error)]/20 bg-[rgba(239,68,68,0.06)] text-[var(--error)]">
+          {error}
+        </div>
+      )}
 
-        {/* Error */}
-        {error && (
-          <div className="p-6 border border-[var(--gray-300)] bg-[var(--gray-50)] text-[var(--gray-700)] animate-in">
-            {error}
-          </div>
-        )}
-
-        {/* Users List */}
-        {!loading && !error && (
-          <div className="max-w-4xl space-y-4 animate-in" style={{ animationDelay: "0.2s" }}>
-            {filtered.map((user, index) => (
-              <div
-                key={user._id}
-                className="card card-elevated p-5 hover:shadow-md transition-shadow"
-                style={{
-                  animationDelay: `${0.3 + index * 0.05}s`,
-                  animation: "fadeIn 0.4s ease-out backwards",
-                }}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-semibold text-lg shrink-0">
-                      {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
-                        {user.name}
-                      </h3>
-                      <div className="text-sm text-[var(--text-secondary)] truncate">{user.email}</div>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span className="badge badge-success">{user.role || "Admin"}</span>
-                        <span className="text-xs text-[var(--text-muted)]">
-                          Created {user.createdAt ? formatDateLong(user.createdAt) : "—"}
-                        </span>
-                      </div>
-                    </div>
+      {!loading && !error && (
+        <div className="list-stack max-w-4xl">
+          {filtered.map((user) => (
+            <div key={user._id} className="list-item">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-semibold text-lg shrink-0">
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
-
-                  <div className="flex items-center gap-2 sm:shrink-0">
-                    <button
-                      onClick={() => setEditingUser(user)}
-                      className="btn btn-secondary btn-compact"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteUser(user._id)}
-                      className="btn btn-secondary btn-compact text-rose-600"
-                    >
-                      Delete
-                    </button>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                      {user.name}
+                    </h3>
+                    <div className="text-sm text-[var(--text-secondary)] truncate">{user.email}</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="badge badge-success">{roleLabel(user.role)}</span>
+                      <span className="text-xs text-[var(--text-muted)]">
+                        {t("users.created", {
+                          date: user.createdAt ? formatDateLong(user.createdAt) : "—",
+                        })}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
 
-            {/* Empty State */}
-            {filtered.length === 0 && (
+                <div className="flex items-center gap-2 sm:shrink-0">
+                  <button
+                    onClick={() => setEditingUser(user)}
+                    className="btn btn-secondary btn-compact"
+                  >
+                    {t("users.edit")}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteUser(user._id)}
+                    className="btn btn-secondary btn-compact text-rose-600"
+                  >
+                    {t("users.delete")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {filtered.length === 0 && (
+            <div className="card card-elevated">
               <EmptyState
-                title={searchTerm ? "No Results" : tEmpty("empty.noUsers")}
+                title={searchTerm ? t("companies.noResults") : t("empty.noUsers")}
                 description={
-                  searchTerm ? "Try a different search" : tEmpty("empty.noUsersDesc")
+                  searchTerm ? t("companies.tryDifferent") : t("empty.noUsersDesc")
                 }
-                actionLabel={!searchTerm ? "+ Add User" : undefined}
+                actionLabel={!searchTerm ? `+ ${t("users.addUser")}` : undefined}
                 onAction={!searchTerm ? () => setShowAddModal(true) : undefined}
               />
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       {(showAddModal || editingUser) && (
@@ -247,11 +242,12 @@ export default function UsersManagement() {
           }}
         />
       )}
-    </div>
+    </PageShell>
   );
 }
 
 function UserModal({ user, onClose, onSave }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -262,7 +258,7 @@ function UserModal({ user, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || (!user && !formData.password)) {
-      alert("Please fill in all required fields");
+      alert(t("users.fillRequired"));
       return;
     }
     onSave(formData);
@@ -272,7 +268,9 @@ function UserModal({ user, onClose, onSave }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg p-8 max-w-md w-full animate-scale">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-light">{user ? "Edit User" : "Add User"}</h2>
+          <h2 className="text-2xl font-light">
+            {user ? t("users.editUser") : t("users.addUser")}
+          </h2>
           <button onClick={onClose} className="text-[var(--gray-400)] hover:text-[var(--black)]">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -282,7 +280,9 @@ function UserModal({ user, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Name</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("users.name")}
+            </label>
             <input
               type="text"
               className="input"
@@ -293,7 +293,9 @@ function UserModal({ user, onClose, onSave }) {
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Email</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("users.email")}
+            </label>
             <input
               type="email"
               className="input"
@@ -305,7 +307,9 @@ function UserModal({ user, onClose, onSave }) {
 
           {!user && (
             <div>
-              <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Password</label>
+              <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                {t("users.password")}
+              </label>
               <input
                 type="password"
                 className="input"
@@ -317,24 +321,26 @@ function UserModal({ user, onClose, onSave }) {
           )}
 
           <div>
-            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Role</label>
+            <label className="block text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+              {t("users.role")}
+            </label>
             <select
               className="input"
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >
-              <option>Admin</option>
-              <option>Super Admin</option>
-              <option>Manager</option>
+              <option value="Admin">{t("users.roles.admin")}</option>
+              <option value="Super Admin">{t("users.roles.superAdmin")}</option>
+              <option value="Manager">{t("users.roles.manager")}</option>
             </select>
           </div>
 
           <div className="flex flex-wrap justify-end gap-3 pt-4">
             <button type="button" onClick={onClose} className="btn btn-secondary btn-compact">
-              Cancel
+              {t("users.cancel")}
             </button>
             <button type="submit" className="btn btn-primary btn-compact">
-              {user ? "Update" : "Add"}
+              {user ? t("users.update") : t("users.add")}
             </button>
           </div>
         </form>

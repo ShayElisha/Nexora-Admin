@@ -18,7 +18,7 @@ export default function LanguageToggle() {
     <button
       type="button"
       onClick={toggleLanguage}
-      className="px-2.5 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--gray-50)] transition-colors"
+      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[rgba(15,118,110,0.08)] transition-colors"
       aria-label="Toggle language"
     >
       {currentLang === "he" ? "EN" : "עב"}

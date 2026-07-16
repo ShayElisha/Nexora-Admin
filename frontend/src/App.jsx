@@ -89,16 +89,16 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <div>Loading...</div>
+      <div className="app-shell flex items-center justify-center">
+        <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3 }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
+    <div className="app-shell">
       <Navbar />
-      <main className="flex-1">
+      <main className="main-content pt-4 pb-10">
         <Routes>
           <Route
             path="/"

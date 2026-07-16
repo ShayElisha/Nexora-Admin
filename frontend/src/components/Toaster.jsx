@@ -8,7 +8,13 @@ export function ToastProvider({ children }) {
 
   const showToast = useCallback((message, type = "info", duration = 5000) => {
     const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev, { id, message, type, duration }]);
+    setToasts((prev) => {
+      // Avoid stacking identical errors (e.g. repeated "Database unavailable")
+      const withoutDupes = prev.filter(
+        (t) => !(t.message === message && t.type === type)
+      );
+      return [...withoutDupes.slice(-2), { id, message, type, duration }];
+    });
     return id;
   }, []);
 

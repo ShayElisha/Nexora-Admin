@@ -31,6 +31,10 @@ import {
 } from "../api/api";
 import { useToast } from "../components/Toaster.jsx";
 import InsightCard from "../components/ui/InsightCard.jsx";
+import PageShell from "../components/ui/PageShell.jsx";
+import PageHeader from "../components/ui/PageHeader.jsx";
+import ErrorPanel from "../components/ui/ErrorPanel.jsx";
+import { BarChart3 } from "lucide-react";
 
 const chartColors = [
   "#2563eb",
@@ -185,49 +189,28 @@ export default function AnalyticsDashboard() {
     return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
   };
 
-  const KPICard = ({ title, value, subtitle, icon, trend, color = "blue", tooltip }) => {
-    const colorClasses = {
-      blue: "bg-blue-500",
-      green: "bg-green-500",
-      purple: "bg-purple-500",
-      orange: "bg-orange-500",
-      red: "bg-red-500",
-    };
+  const KPICard = ({ title, value, subtitle, trend, tone = "slate" }) => {
+    const toneClass = {
+      slate: "kpi-card-slate",
+      green: "kpi-card-green",
+      blue: "kpi-card-blue",
+      amber: "kpi-card-amber",
+      rose: "kpi-card-rose",
+    }[tone] || "kpi-card-slate";
 
     return (
-      <div className="card p-6 hover:shadow-lg transition-shadow">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <p className="text-sm text-[var(--text-secondary)] mb-1">{title}</p>
-            <p className="text-3xl font-bold text-[var(--text)]">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-[var(--text-muted)] mt-1">{subtitle}</p>
-            )}
-          </div>
-          {icon && (
-            <div className="relative group">
-              <div className={`${colorClasses[color]} text-white p-3 rounded-lg cursor-help transition-transform hover:scale-110`}>
-                {icon}
-              </div>
-              {tooltip && (
-                <div className="absolute right-0 top-full mt-2 w-72 p-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
-                  <p className="text-xs text-[var(--text)] leading-relaxed whitespace-normal">{tooltip}</p>
-                  <div className="absolute -top-1.5 right-6 w-3 h-3 bg-[var(--bg-elevated)] border-l border-t border-[var(--border)] transform rotate-45"></div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      <div className={`kpi-card ${toneClass}`}>
+        <p className="kpi-label">{title}</p>
+        <p className="kpi-value">{value}</p>
+        {subtitle && (
+          <p className="text-xs opacity-75 mt-1.5 font-medium">{subtitle}</p>
+        )}
         {trend !== undefined && (
           <div className="flex items-center gap-2 mt-2">
-            <span
-              className={`text-sm font-medium ${
-                trend >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
+            <span className={`text-sm font-semibold ${trend >= 0 ? "text-teal-700" : "text-rose-600"}`}>
               {formatPercentage(trend)}
             </span>
-            <span className="text-xs text-[var(--text-muted)]">{t("analytics.vsLastPeriod")}</span>
+            <span className="text-xs opacity-70">{t("analytics.vsLastPeriod")}</span>
           </div>
         )}
       </div>
@@ -236,41 +219,32 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] py-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
+      <PageShell>
+        <div className="flex flex-col items-center justify-center py-28">
+          <div className="spinner mb-4" />
           <p className="text-[var(--text-secondary)]">{t("analytics.loading")}</p>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] py-8">
-        <div className="container">
-          <div className="card p-6 text-[var(--error)]">{error}</div>
-        </div>
-      </div>
+      <PageShell>
+        <ErrorPanel message={error} />
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] py-8">
-      <div className="container space-y-8">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 text-[var(--text)]">
-              {t("analytics.title")}
-            </h1>
-            <p className="text-[var(--text-secondary)]">
-              {t("analytics.subtitle")}
-            </p>
-          </div>
-          <div className="flex gap-4">
+    <PageShell>
+        <PageHeader
+          title={t("analytics.title")}
+          subtitle={t("analytics.subtitle")}
+          icon={<BarChart3 className="w-5 h-5" />}
+          actions={
             <select
-              className="input"
+              className="input !w-auto"
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
             >
@@ -278,93 +252,73 @@ export default function AnalyticsDashboard() {
               <option value="quarter">{t("analytics.period.quarter")}</option>
               <option value="year">{t("analytics.period.year")}</option>
             </select>
-          </div>
-        </header>
+          }
+        />
 
         {/* KPI Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <KPICard
             title={t("analytics.kpi.mrr")}
             value={formatCurrency(kpiData.mrr)}
             subtitle={t("analytics.kpi.mrrSubtitle")}
-            icon="💰"
-            color="green"
+            tone="green"
             trend={kpiData.growthRate}
-            tooltip={t("analytics.kpi.mrrTooltip")}
           />
           <KPICard
             title={t("analytics.kpi.arr")}
             value={formatCurrency(kpiData.arr)}
             subtitle={t("analytics.kpi.arrSubtitle")}
-            icon="📈"
-            color="blue"
-            tooltip={t("analytics.kpi.arrTooltip")}
+            tone="blue"
           />
           <KPICard
             title={t("analytics.kpi.churnRate")}
             value={`${kpiData.churnRate.toFixed(2)}%`}
             subtitle={t(`analytics.period.${selectedPeriod}`)}
-            icon="⚠️"
-            color="red"
-            tooltip={t("analytics.kpi.churnRateTooltip")}
+            tone="rose"
           />
           <KPICard
             title={t("analytics.kpi.clv")}
             value={formatCurrency(kpiData.clv)}
             subtitle={t("analytics.kpi.clvSubtitle")}
-            icon="💎"
-            color="purple"
-            tooltip={t("analytics.kpi.clvTooltip")}
+            tone="slate"
           />
-        </section>
-
-        {/* Additional KPI Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             title={t("analytics.kpi.arpu")}
             value={formatCurrency(kpiData.arpu)}
             subtitle={t("analytics.kpi.arpuSubtitle")}
-            icon="👤"
-            color="orange"
-            tooltip={t("analytics.kpi.arpuTooltip")}
+            tone="amber"
           />
           <KPICard
             title={t("analytics.kpi.growthRate")}
             value={formatPercentage(kpiData.growthRate)}
             subtitle={t("analytics.kpi.growthRateSubtitle")}
-            icon="📊"
-            color="green"
-            tooltip={t("analytics.kpi.growthRateTooltip")}
+            tone="green"
           />
           <KPICard
             title={t("analytics.kpi.conversionRate")}
             value={`${kpiData.conversionRate.toFixed(2)}%`}
             subtitle={t("analytics.kpi.conversionRateSubtitle")}
-            icon="🔄"
-            color="blue"
-            tooltip={t("analytics.kpi.conversionRateTooltip")}
+            tone="blue"
           />
           <KPICard
             title={t("analytics.kpi.activeCompanies")}
             value={kpiData.activeCompanies}
             subtitle={t("analytics.kpi.activeCompaniesSubtitle", { total: kpiData.totalCompanies })}
-            icon="🏢"
-            color="purple"
-            tooltip={t("analytics.kpi.activeCompaniesTooltip")}
+            tone="slate"
           />
         </section>
 
         {/* Revenue Trends Chart */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
+          <div className="card card-elevated">
             <h2 className="text-xl font-semibold mb-4">{t("analytics.charts.revenueTrends")}</h2>
-            <div className="h-80">
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueTrends}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#0f766e" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -380,7 +334,7 @@ export default function AnalyticsDashboard() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#2563eb"
+                    stroke="#0f766e"
                     fill="url(#revenueGradient)"
                     strokeWidth={2}
                     name={t("analytics.charts.revenue")}
@@ -388,7 +342,7 @@ export default function AnalyticsDashboard() {
                   <Line
                     type="monotone"
                     dataKey="newCompanies"
-                    stroke="#10b981"
+                    stroke="#14b8a6"
                     strokeWidth={2}
                     name={t("analytics.charts.newCompanies")}
                   />
@@ -398,9 +352,9 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Cohort Analysis */}
-          <div className="card p-6">
+          <div className="card card-elevated">
             <h2 className="text-xl font-semibold mb-4">{t("analytics.charts.cohortAnalysis")}</h2>
-            <div className="h-80">
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={cohortData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -414,7 +368,7 @@ export default function AnalyticsDashboard() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="active" fill="#10b981" name={t("analytics.charts.active")} />
+                  <Bar dataKey="active" fill="#0f766e" name={t("analytics.charts.active")} />
                   <Bar dataKey="inactive" fill="#ef4444" name={t("analytics.charts.inactive")} />
                 </BarChart>
               </ResponsiveContainer>
@@ -423,7 +377,7 @@ export default function AnalyticsDashboard() {
         </section>
 
         {/* Company Performance Table */}
-        <section className="card p-6">
+        <section className="card card-elevated">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">{t("analytics.performance.title")}</h2>
             <button
@@ -643,7 +597,7 @@ export default function AnalyticsDashboard() {
         </section>
 
         {/* At-Risk Companies */}
-        <section className="card p-6">
+        <section className="card card-elevated">
           <h2 className="text-xl font-semibold mb-4">{t("analytics.widgets.atRiskCompanies")}</h2>
             <div className="space-y-3">
               {atRiskCompanies.length > 0 ? (
@@ -675,9 +629,9 @@ export default function AnalyticsDashboard() {
         </section>
 
         {/* Geographic Distribution */}
-        <section className="card p-6">
+        <section className="card card-elevated">
           <h2 className="text-xl font-semibold mb-4">{t("analytics.charts.geographicDistribution")}</h2>
-          <div className="h-80">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={geographicData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -692,7 +646,7 @@ export default function AnalyticsDashboard() {
                 />
                 <Legend />
                 <Bar dataKey="count" fill="#2563eb" name={t("analytics.charts.totalCompanies")} />
-                <Bar dataKey="active" fill="#10b981" name={t("analytics.charts.active")} />
+                <Bar dataKey="active" fill="#0f766e" name={t("analytics.charts.active")} />
                 <Bar dataKey="revenue" fill="#f59e0b" name={t("analytics.charts.revenue")} />
               </BarChart>
             </ResponsiveContainer>
@@ -794,8 +748,7 @@ export default function AnalyticsDashboard() {
             </div>
           </div>
         </section>
-      </div>
-    </div>
+    </PageShell>
   );
 }
 

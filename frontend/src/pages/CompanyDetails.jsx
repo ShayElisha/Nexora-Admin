@@ -44,7 +44,7 @@ export default function CompanyDetails() {
         const found = Array.isArray(companies) ? companies.find((c) => c._id === id) : null;
 
         if (!found) {
-          setError("Company not found");
+          setError(t("companyDetails.notFound"));
         } else {
           setCompany(found);
           // Load internal notes from localStorage
@@ -54,7 +54,7 @@ export default function CompanyDetails() {
           }
         }
       } catch (e) {
-        setError(e?.message || "Failed to load company");
+        setError(e?.message || t("companyDetails.failedToLoad"));
       } finally {
         setLoading(false);
       }
@@ -108,7 +108,7 @@ export default function CompanyDetails() {
       setPayments(formattedPayments);
     } catch (err) {
       console.error("Error loading payments:", err);
-      showToast("Failed to load payment history", "error");
+      showToast(t("companyDetails.failedToLoadPayments"), "error");
     } finally {
       setPaymentsLoading(false);
     }
@@ -129,14 +129,14 @@ export default function CompanyDetails() {
     setInternalNotes(updatedNotes);
     localStorage.setItem(`company_notes_${id}`, JSON.stringify(updatedNotes));
     setNewNote("");
-    showToast("Note added successfully", "success");
+    showToast(t("companyDetails.noteAdded"), "success");
   };
 
   const deleteInternalNote = (noteId) => {
     const updatedNotes = internalNotes.filter((n) => n.id !== noteId);
     setInternalNotes(updatedNotes);
     localStorage.setItem(`company_notes_${id}`, JSON.stringify(updatedNotes));
-    showToast("Note deleted", "success");
+    showToast(t("companyDetails.noteDeleted"), "success");
   };
 
   // Prepare performance chart data
@@ -186,13 +186,13 @@ export default function CompanyDetails() {
       totalPayments: payments.length,
       averagePayment,
       lastPaymentDate,
-      plan: company.subscription?.plan || "No Plan",
+      plan: company.subscription?.plan || t("companyDetails.noPlan"),
     };
   }, [company, payments]);
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+      <div className="min-h-screen pt-6 pb-16 flex items-center justify-center">
         <div className="spinner" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
       </div>
     );
@@ -200,18 +200,18 @@ export default function CompanyDetails() {
 
   if (error || !company) {
     return (
-      <div className="min-h-screen pt-24 pb-16">
+      <div className="min-h-screen pt-6 pb-16">
         <div className="container">
           <div className="mb-8">
             <button
               onClick={() => navigate("/companies")}
               className="text-sm text-[var(--gray-500)] hover:text-[var(--black)] mb-8"
             >
-              ← Back to Companies
+              ← {t("companyDetails.backToCompanies")}
             </button>
           </div>
           <div className="card border p-8 text-center">
-            <p className="text-[var(--gray-700)]">{error || "Company not found"}</p>
+            <p className="text-[var(--gray-700)]">{error || t("companyDetails.notFound")}</p>
           </div>
         </div>
       </div>
@@ -219,22 +219,22 @@ export default function CompanyDetails() {
   }
 
   const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "performance", label: "Performance" },
-    { id: "payments", label: "Payment History" },
-    { id: "usage", label: "Usage Analytics" },
-    { id: "notes", label: "Internal Notes" },
+    { id: "overview", label: t("companyDetails.tabs.overview") },
+    { id: "performance", label: t("companyDetails.tabs.performance") },
+    { id: "payments", label: t("companyDetails.tabs.paymentHistory") },
+    { id: "usage", label: t("companyDetails.tabs.usageAnalytics") },
+    { id: "notes", label: t("companyDetails.tabs.notes") },
   ];
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="min-h-screen pt-6 pb-16">
       <div className="container">
         {/* Back Button */}
         <button
           onClick={() => navigate("/companies")}
           className="text-sm text-[var(--gray-500)] hover:text-[var(--black)] mb-8 animate-in"
         >
-          ← Back to Companies
+          ← {t("companyDetails.backToCompanies")}
         </button>
 
         {/* Header */}
@@ -277,22 +277,22 @@ export default function CompanyDetails() {
           {activeTab === "overview" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <SectionCard title="Contact">
+                <SectionCard title={t("companyDetails.contact")}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="field-label">Email</div>
+                      <div className="field-label">{t("companies.email")}</div>
                       <div className="field-value">{company.email || "—"}</div>
                     </div>
                     <div>
-                      <div className="field-label">Phone</div>
+                      <div className="field-label">{t("companies.phone")}</div>
                       <div className="field-value">{company.phone || "—"}</div>
                     </div>
                     <div>
-                      <div className="field-label">Status</div>
+                      <div className="field-label">{t("companies.status")}</div>
                       <StatusBadge status={company.status} />
                     </div>
                     <div>
-                      <div className="field-label">Registration Date</div>
+                      <div className="field-label">{t("companyDetails.registrationDate")}</div>
                       <div className="field-value">
                         {company.createdAt
                           ? new Date(company.createdAt).toLocaleDateString("en-US", {
@@ -306,17 +306,17 @@ export default function CompanyDetails() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Plan">
+                <SectionCard title={t("companies.plan")}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="field-label">Current Plan</div>
+                      <div className="field-label">{t("companyDetails.currentPlan")}</div>
                       <div className="field-value text-lg font-semibold">
-                        {company.subscription?.plan || "No Plan"}
+                        {company.subscription?.plan || t("companyDetails.noPlan")}
                       </div>
                     </div>
                     {company.subscription?.startDate && (
                       <div>
-                        <div className="field-label">Start Date</div>
+                        <div className="field-label">{t("payments.startDate")}</div>
                         <div className="field-value">
                           {new Date(company.subscription.startDate).toLocaleDateString("en-US", {
                             month: "long",
@@ -328,7 +328,7 @@ export default function CompanyDetails() {
                     )}
                     {company.subscription?.endDate && (
                       <div>
-                        <div className="field-label">End Date</div>
+                        <div className="field-label">{t("payments.endDate")}</div>
                         <div className="field-value">
                           {new Date(company.subscription.endDate).toLocaleDateString("en-US", {
                             month: "long",
@@ -341,26 +341,26 @@ export default function CompanyDetails() {
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Activity">
+                <SectionCard title={t("companyDetails.activity")}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <MetricCard
-                      label="Account age"
+                      label={t("companyDetails.accountAge")}
                       value={`${usageStats?.daysSinceRegistration ?? 0}d`}
-                      hint="Since registration"
+                      hint={t("companyDetails.sinceRegistration")}
                       tone="blue"
                     />
                     <MetricCard
-                      label="Payments"
+                      label={t("companyDetails.totalPayments")}
                       value={usageStats?.totalPayments ?? 0}
-                      hint="Recorded transactions"
+                      hint={t("companyDetails.recordedTransactions")}
                       tone="green"
                     />
                     <MetricCard
-                      label="Revenue"
+                      label={t("payments.totalRevenue")}
                       value={`$${(usageStats?.totalRevenue ?? 0).toLocaleString(undefined, {
                         maximumFractionDigits: 0,
                       })}`}
-                      hint="Lifetime billed"
+                      hint={t("companyDetails.lifetimeBilled")}
                       tone="orange"
                     />
                   </div>
@@ -368,16 +368,16 @@ export default function CompanyDetails() {
               </div>
 
               <div className="space-y-6">
-                <SectionCard title="Quick Actions">
+                <SectionCard title={t("companyDetails.quickActions")}>
                   <div className="space-y-3">
-                    <button className="btn btn-primary w-full">Send Message</button>
-                    <button className="btn btn-secondary w-full">View Documents</button>
-                    <button className="btn btn-secondary w-full">Edit Company</button>
+                    <button className="btn btn-primary w-full">{t("communication.sendMessage")}</button>
+                    <button className="btn btn-secondary w-full">{t("companyDetails.viewDocuments")}</button>
+                    <button className="btn btn-secondary w-full">{t("companyDetails.editCompany")}</button>
                   </div>
                 </SectionCard>
 
-                <SectionCard title="Additional Info">
-                  <div className="field-label">Company ID</div>
+                <SectionCard title={t("companyDetails.additionalInfo")}>
+                  <div className="field-label">{t("companyDetails.companyId")}</div>
                   <div className="field-value font-mono text-xs break-all text-[var(--text-secondary)]">
                     {company._id}
                   </div>
@@ -390,7 +390,7 @@ export default function CompanyDetails() {
           {activeTab === "performance" && (
             <div className="space-y-8">
               <div className="card border p-8">
-                <h2 className="text-2xl font-light mb-6">Performance Overview</h2>
+                <h2 className="text-2xl font-light mb-6">{t("companyDetails.performanceOverview")}</h2>
                 {performanceChartData.length > 0 ? (
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
@@ -417,21 +417,21 @@ export default function CompanyDetails() {
                           stroke="#2563eb"
                           fill="url(#performanceGradient)"
                           strokeWidth={2}
-                          name="Revenue"
+                          name={t("analytics.charts.revenue")}
                         />
                         <Line
                           type="monotone"
                           dataKey="payments"
                           stroke="#10b981"
                           strokeWidth={2}
-                          name="Payments"
+                          name={t("companyDetails.totalPayments")}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
                   <div className="text-center py-12 text-[var(--gray-500)]">
-                    No payment data available yet
+                    {t("companyDetails.noPaymentData")}
                   </div>
                 )}
               </div>
@@ -440,17 +440,23 @@ export default function CompanyDetails() {
               {usageStats && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="card border p-6">
-                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Total Revenue</div>
+                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                      {t("payments.totalRevenue")}
+                    </div>
                     <div className="text-3xl font-light">
                       ${usageStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
                   </div>
                   <div className="card border p-6">
-                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Total Payments</div>
+                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                      {t("companyDetails.totalPayments")}
+                    </div>
                     <div className="text-3xl font-light">{usageStats.totalPayments}</div>
                   </div>
                   <div className="card border p-6">
-                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Average Payment</div>
+                    <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                      {t("companyDetails.averagePayment")}
+                    </div>
                     <div className="text-3xl font-light">
                       ${usageStats.averagePayment.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
@@ -464,11 +470,11 @@ export default function CompanyDetails() {
           {activeTab === "payments" && (
             <div className="space-y-8">
               <div className="card border p-8">
-                <h2 className="text-2xl font-light mb-6">Payment History</h2>
+                <h2 className="text-2xl font-light mb-6">{t("companyDetails.tabs.paymentHistory")}</h2>
                 {paymentsLoading ? (
                   <div className="text-center py-12">
                     <div className="spinner mx-auto mb-4" style={{ width: "40px", height: "40px", borderWidth: "2px" }}></div>
-                    <p className="text-[var(--gray-500)]">Loading payments...</p>
+                    <p className="text-[var(--gray-500)]">{t("companyDetails.loadingPayments")}</p>
                   </div>
                 ) : payments.length > 0 ? (
                   <div className="overflow-x-auto">
@@ -476,19 +482,19 @@ export default function CompanyDetails() {
                       <thead>
                         <tr className="border-b border-[var(--gray-200)]">
                           <th className="text-left py-3 px-4 text-xs uppercase tracking-wider text-[var(--gray-500)] font-medium">
-                            Date
+                            {t("payments.date")}
                           </th>
                           <th className="text-left py-3 px-4 text-xs uppercase tracking-wider text-[var(--gray-500)] font-medium">
-                            Amount
+                            {t("payments.amount")}
                           </th>
                           <th className="text-left py-3 px-4 text-xs uppercase tracking-wider text-[var(--gray-500)] font-medium">
-                            Plan
+                            {t("companies.plan")}
                           </th>
                           <th className="text-left py-3 px-4 text-xs uppercase tracking-wider text-[var(--gray-500)] font-medium">
-                            Status
+                            {t("companies.status")}
                           </th>
                           <th className="text-left py-3 px-4 text-xs uppercase tracking-wider text-[var(--gray-500)] font-medium">
-                            Type
+                            {t("common.type")}
                           </th>
                         </tr>
                       </thead>
@@ -520,7 +526,9 @@ export default function CompanyDetails() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-[var(--gray-700)] font-light">
-                              {payment.isRecurring ? "Recurring" : "One-time"}
+                              {payment.isRecurring
+                                ? t("companyDetails.recurring")
+                                : t("companyDetails.oneTime")}
                             </td>
                           </tr>
                         ))}
@@ -529,7 +537,7 @@ export default function CompanyDetails() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-[var(--gray-500)]">
-                    No payment history available
+                    {t("companyDetails.noPaymentHistory")}
                   </div>
                 )}
               </div>
@@ -541,20 +549,30 @@ export default function CompanyDetails() {
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="card border p-6">
-                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Days Active</div>
+                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                    {t("companyDetails.daysActive")}
+                  </div>
                   <div className="text-3xl font-light">{usageStats.daysSinceRegistration}</div>
-                  <div className="text-sm text-[var(--gray-500)] mt-1">Since registration</div>
+                  <div className="text-sm text-[var(--gray-500)] mt-1">
+                    {t("companyDetails.sinceRegistration")}
+                  </div>
                 </div>
                 <div className="card border p-6">
-                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Current Plan</div>
+                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                    {t("companyDetails.currentPlan")}
+                  </div>
                   <div className="text-3xl font-light">{usageStats.plan}</div>
                 </div>
                 <div className="card border p-6">
-                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Total Payments</div>
+                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                    {t("companyDetails.totalPayments")}
+                  </div>
                   <div className="text-3xl font-light">{usageStats.totalPayments}</div>
                 </div>
                 <div className="card border p-6">
-                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">Last Payment</div>
+                  <div className="text-xs uppercase tracking-wider text-[var(--gray-500)] mb-2">
+                    {t("companyDetails.lastPayment")}
+                  </div>
                   <div className="text-lg font-light">
                     {usageStats.lastPaymentDate
                       ? new Date(usageStats.lastPaymentDate).toLocaleDateString("en-US", {
@@ -562,13 +580,13 @@ export default function CompanyDetails() {
                           day: "numeric",
                           year: "numeric",
                         })
-                      : "Never"}
+                      : t("companyDetails.never")}
                   </div>
                 </div>
               </div>
 
               <div className="card border p-8">
-                <h2 className="text-2xl font-light mb-6">Revenue Trend</h2>
+                <h2 className="text-2xl font-light mb-6">{t("companyDetails.revenueTrend")}</h2>
                 {performanceChartData.length > 0 ? (
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -588,14 +606,14 @@ export default function CompanyDetails() {
                           dataKey="revenue"
                           stroke="#2563eb"
                           strokeWidth={2}
-                          name="Revenue"
+                          name={t("analytics.charts.revenue")}
                         />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
                   <div className="text-center py-12 text-[var(--gray-500)]">
-                    No usage data available yet
+                    {t("companyDetails.noUsageData")}
                   </div>
                 )}
               </div>
@@ -606,19 +624,19 @@ export default function CompanyDetails() {
           {activeTab === "notes" && (
             <div className="space-y-8">
               <div className="card border p-8">
-                <h2 className="text-2xl font-light mb-6">Internal Notes</h2>
+                <h2 className="text-2xl font-light mb-6">{t("companyDetails.internalNotes")}</h2>
                 
                 {/* Add Note Form */}
                 <div className="mb-8 pb-8 border-b border-[var(--gray-200)]">
                   <textarea
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Add an internal note about this company..."
+                    placeholder={t("companyDetails.notePlaceholder")}
                     className="input w-full mb-4"
                     rows={4}
                   />
                   <button onClick={addInternalNote} className="btn btn-primary">
-                    Add Note
+                    {t("companyDetails.addNote")}
                   </button>
                 </div>
 
@@ -643,7 +661,7 @@ export default function CompanyDetails() {
                           <button
                             onClick={() => deleteInternalNote(note.id)}
                             className="text-[var(--gray-500)] hover:text-[var(--red)] transition-colors"
-                            aria-label="Delete note"
+                            aria-label={t("companyDetails.deleteNote")}
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
@@ -661,7 +679,7 @@ export default function CompanyDetails() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-[var(--gray-500)]">
-                    No internal notes yet. Add your first note above.
+                    {t("companyDetails.noNotesYet")}
                   </div>
                 )}
               </div>
