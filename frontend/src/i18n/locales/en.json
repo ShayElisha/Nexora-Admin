@@ -26,7 +26,11 @@
     "groupOps": "Operations",
     "groupAdmin": "Admin",
     "toggleMenu": "Toggle menu",
-    "userFallback": "User"
+    "userFallback": "User",
+    "toggleTheme": "Toggle theme",
+    "toggleLanguage": "Language",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
   },
   "dashboard": {
     "title": "Dashboard",

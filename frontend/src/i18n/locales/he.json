@@ -26,7 +26,11 @@
     "groupOps": "תפעול",
     "groupAdmin": "ניהול",
     "toggleMenu": "החלף תפריט",
-    "userFallback": "משתמש"
+    "userFallback": "משתמש",
+    "toggleTheme": "החלף ערכת נושא",
+    "toggleLanguage": "שפה",
+    "lightMode": "מצב בהיר",
+    "darkMode": "מצב כהה"
   },
   "dashboard": {
     "title": "לוח בקרה",

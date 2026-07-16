@@ -230,38 +230,48 @@ export default function Navbar() {
                 </button>
                 {alertsOpen && (
                   <div className="alerts-panel">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                        {t("nav.alerts")}
-                      </h3>
+                    <div className="alerts-panel-header">
+                      <div className="alerts-panel-heading">
+                        <span className="alerts-panel-icon" aria-hidden>
+                          <Bell className="w-3.5 h-3.5" />
+                        </span>
+                        <h3 className="alerts-panel-title">{t("nav.alerts")}</h3>
+                        {alertStats?.unread > 0 && (
+                          <span className="alerts-panel-count">{alertStats.unread}</span>
+                        )}
+                      </div>
                       <NavLink
                         to="/alerts"
                         onClick={() => setAlertsOpen(false)}
-                        className="text-xs font-semibold text-[var(--primary)]"
+                        className="alerts-panel-link"
                       >
                         {t("nav.viewAll")}
                       </NavLink>
                     </div>
                     {alerts.length === 0 ? (
-                      <div className="p-8 text-center text-sm text-[var(--text-muted)]">
-                        {t("nav.noAlerts")}
+                      <div className="alerts-panel-empty">
+                        <div className="alerts-panel-empty-icon">
+                          <Bell className="w-5 h-5" />
+                        </div>
+                        <p className="alerts-panel-empty-title">{t("nav.noAlerts")}</p>
+                        <p className="alerts-panel-empty-desc">
+                          {t("empty.noAlertsDesc")}
+                        </p>
                       </div>
                     ) : (
-                      <div className="py-1 max-h-72 overflow-y-auto">
+                      <div className="alerts-panel-list">
                         {alerts.map((alert) => (
                           <button
                             key={alert._id}
                             type="button"
                             onClick={() => handleAlertClick(alert)}
-                            className="w-full px-4 py-3 text-start hover:bg-[rgba(15,118,110,0.06)] transition-colors"
+                            className={`alerts-panel-item ${
+                              alert.status === "unread" ? "is-unread" : ""
+                            }`}
                           >
-                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">
-                              {alert.title}
-                            </p>
-                            <p className="text-xs text-[var(--text-muted)] line-clamp-2">
-                              {alert.message}
-                            </p>
-                            <p className="text-[10px] text-[var(--text-muted)] mt-1.5">
+                            <p className="alerts-panel-item-title">{alert.title}</p>
+                            <p className="alerts-panel-item-msg">{alert.message}</p>
+                            <p className="alerts-panel-item-time">
                               {formatDateTime(alert.createdAt)}
                             </p>
                           </button>

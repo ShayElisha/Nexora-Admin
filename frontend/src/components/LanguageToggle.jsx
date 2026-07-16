@@ -2,26 +2,40 @@ import { useTranslation } from "react-i18next";
 import { applyDocumentLocale } from "../i18n/config.js";
 
 export default function LanguageToggle() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || "en").toLowerCase().startsWith("he")
     ? "he"
     : "en";
 
-  const toggleLanguage = () => {
-    const newLang = currentLang === "he" ? "en" : "he";
+  const setLanguage = (newLang) => {
+    if (newLang === currentLang) return;
     i18n.changeLanguage(newLang);
     applyDocumentLocale(newLang);
     localStorage.setItem("i18nextLng", newLang);
   };
 
   return (
-    <button
-      type="button"
-      onClick={toggleLanguage}
-      className="px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[rgba(15,118,110,0.08)] transition-colors"
-      aria-label="Toggle language"
+    <div
+      className="lang-switch"
+      role="group"
+      aria-label={t("nav.toggleLanguage", { defaultValue: "Language" })}
     >
-      {currentLang === "he" ? "EN" : "עב"}
-    </button>
+      <button
+        type="button"
+        className={`lang-switch-option ${currentLang === "en" ? "is-active" : ""}`}
+        onClick={() => setLanguage("en")}
+        aria-pressed={currentLang === "en"}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        className={`lang-switch-option ${currentLang === "he" ? "is-active" : ""}`}
+        onClick={() => setLanguage("he")}
+        aria-pressed={currentLang === "he"}
+      >
+        עב
+      </button>
+    </div>
   );
 }
